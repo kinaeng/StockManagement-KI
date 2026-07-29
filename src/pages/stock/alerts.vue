@@ -19,11 +19,7 @@
     </div>
 
     <!-- Low Stock Table -->
-    <BaseTable
-      title="สินค้าที่ต้องสั่งซื้อด่วน"
-      :rows="lowStockProducts"
-      :columns="columns"
-    >
+    <BaseTable title="สินค้าที่ต้องสั่งซื้อด่วน" :rows="lowStockProducts" :columns="columns">
       <template #body-cell-status="props">
         <q-td :props="props">
           <q-chip color="negative" text-color="white" size="sm" icon="priority_high">
@@ -65,12 +61,30 @@ import { useProducts, type Product } from '@/composables/use-products';
 const { products } = useProducts();
 
 const columns = [
-  { name: 'partNumber', label: 'รหัสสินค้า (Part No.)', field: 'partNumber', align: 'left' as const, sortable: true },
+  {
+    name: 'partNumber',
+    label: 'รหัสสินค้า (Part No.)',
+    field: 'partNumber',
+    align: 'left' as const,
+    sortable: true,
+  },
   { name: 'name', label: 'ชื่อสินค้า', field: 'name', align: 'left' as const, sortable: true },
   { name: 'category', label: 'หมวดหมู่', field: 'category', align: 'left' as const },
-  { name: 'stockQty', label: 'คงเหลือปัจจุบัน', field: 'stockQty', align: 'right' as const, sortable: true },
-  { name: 'reorderPoint', label: 'จุดสั่งซื้อ (Min)', field: 'reorderPoint', align: 'right' as const, sortable: true },
-  { name: 'shortage', label: 'จำนวนขาด', field: 'shortage', align: 'right' as const },
+  {
+    name: 'stockQty',
+    label: 'คงเหลือปัจจุบัน',
+    field: 'stockQty',
+    align: 'left' as const,
+    sortable: true,
+  },
+  {
+    name: 'reorderPoint',
+    label: 'จุดสั่งซื้อ (Min)',
+    field: 'reorderPoint',
+    align: 'left' as const,
+    sortable: true,
+  },
+  { name: 'shortage', label: 'จำนวนขาด', field: 'shortage', align: 'left' as const },
   { name: 'status', label: 'สถานะ', field: 'status', align: 'center' as const },
   { name: 'actions', label: 'ดำเนินการ', field: 'actions', align: 'right' as const },
 ];

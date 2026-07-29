@@ -3,7 +3,8 @@
     <div class="page-header">
       <h1 class="page-header__title">ระบบรายงานและวิเคราะห์ (Reports & Analytics)</h1>
       <p class="page-header__subtitle">
-        ออกรายงานสินค้าคงคลัง สินค้าเคลื่อนไหวเร็ว/ช้า และประเมินมูลค่าสินค้าคงคลัง (FR-6.1 - FR-6.4)
+        ออกรายงานสินค้าคงคลัง สินค้าเคลื่อนไหวเร็ว/ช้า และประเมินมูลค่าสินค้าคงคลัง (FR-6.1 -
+        FR-6.4)
       </p>
     </div>
 
@@ -80,11 +81,7 @@
     </q-card>
 
     <!-- Report Output Display Table -->
-    <BaseTable
-      :title="reportTitle"
-      :rows="reportData"
-      :columns="activeColumns"
-    >
+    <BaseTable :title="reportTitle" :rows="reportData" :columns="activeColumns">
       <template #actions>
         <q-btn
           color="secondary"
@@ -105,7 +102,9 @@
             text-color="white"
             size="sm"
           >
-            {{ props.row.turnoverStatus === 'Fast' ? 'หมุนเวียนเร็ว (Fast)' : 'หมุนเวียนช้า (Slow)' }}
+            {{
+              props.row.turnoverStatus === 'Fast' ? 'หมุนเวียนเร็ว (Fast)' : 'หมุนเวียนช้า (Slow)'
+            }}
           </q-chip>
         </q-td>
       </template>
@@ -133,31 +132,83 @@ const reportTitle = computed((): string => {
 });
 
 const onHandColumns = [
-  { name: 'partNumber', label: 'รหัสสินค้า', field: 'partNumber', align: 'left' as const, sortable: true },
+  {
+    name: 'partNumber',
+    label: 'รหัสสินค้า',
+    field: 'partNumber',
+    align: 'left' as const,
+    sortable: true,
+  },
   { name: 'name', label: 'ชื่อสินค้า', field: 'name', align: 'left' as const, sortable: true },
   { name: 'category', label: 'หมวดหมู่', field: 'category', align: 'left' as const },
   { name: 'brand', label: 'ยี่ห้อ', field: 'brand', align: 'left' as const },
-  { name: 'stockQty', label: 'จำนวนคงเหลือ', field: 'stockQty', align: 'right' as const, sortable: true },
-  { name: 'reorderPoint', label: 'จุดสั่งซื้อ (Min)', field: 'reorderPoint', align: 'right' as const },
+  {
+    name: 'stockQty',
+    label: 'จำนวนคงเหลือ',
+    field: 'stockQty',
+    align: 'left' as const,
+    sortable: true,
+  },
+  {
+    name: 'reorderPoint',
+    label: 'จุดสั่งซื้อ (Min)',
+    field: 'reorderPoint',
+    align: 'left' as const,
+  },
 ];
 
 const movementColumns = [
-  { name: 'partNumber', label: 'รหัสสินค้า', field: 'partNumber', align: 'left' as const, sortable: true },
+  {
+    name: 'partNumber',
+    label: 'รหัสสินค้า',
+    field: 'partNumber',
+    align: 'left' as const,
+    sortable: true,
+  },
   { name: 'name', label: 'ชื่อสินค้า', field: 'name', align: 'left' as const, sortable: true },
   { name: 'category', label: 'หมวดหมู่', field: 'category', align: 'left' as const },
-  { name: 'stockQty', label: 'คงเหลือปัจจุบัน', field: 'stockQty', align: 'right' as const },
-  { name: 'sales30Days', label: 'ยอดจ่ายออก (30 วัน)', field: 'sales30Days', align: 'right' as const, sortable: true },
-  { name: 'turnoverStatus', label: 'สถานะหมุนเวียน', field: 'turnoverStatus', align: 'center' as const },
+  { name: 'stockQty', label: 'คงเหลือปัจจุบัน', field: 'stockQty', align: 'left' as const },
+  {
+    name: 'sales30Days',
+    label: 'ยอดจ่ายออก (30 วัน)',
+    field: 'sales30Days',
+    align: 'left' as const,
+    sortable: true,
+  },
+  {
+    name: 'turnoverStatus',
+    label: 'สถานะหมุนเวียน',
+    field: 'turnoverStatus',
+    align: 'center' as const,
+  },
 ];
 
 const valuationColumns = [
-  { name: 'partNumber', label: 'รหัสสินค้า', field: 'partNumber', align: 'left' as const, sortable: true },
+  {
+    name: 'partNumber',
+    label: 'รหัสสินค้า',
+    field: 'partNumber',
+    align: 'left' as const,
+    sortable: true,
+  },
   { name: 'name', label: 'ชื่อสินค้า', field: 'name', align: 'left' as const, sortable: true },
-  { name: 'costPrice', label: 'ราคาทุน/ชิ้น (฿)', field: 'costPrice', align: 'right' as const },
-  { name: 'salePrice', label: 'ราคาขาย/ชิ้น (฿)', field: 'salePrice', align: 'right' as const },
-  { name: 'stockQty', label: 'จำนวนคงเหลือ', field: 'stockQty', align: 'right' as const },
-  { name: 'totalCostValue', label: 'มูลค่าทุนรวม (฿)', field: 'totalCostValue', align: 'right' as const, sortable: true },
-  { name: 'totalSaleValue', label: 'มูลค่าขายรวม (฿)', field: 'totalSaleValue', align: 'right' as const, sortable: true },
+  { name: 'costPrice', label: 'ราคาทุน/ชิ้น (฿)', field: 'costPrice', align: 'left' as const },
+  { name: 'salePrice', label: 'ราคาขาย/ชิ้น (฿)', field: 'salePrice', align: 'left' as const },
+  { name: 'stockQty', label: 'จำนวนคงเหลือ', field: 'stockQty', align: 'left' as const },
+  {
+    name: 'totalCostValue',
+    label: 'มูลค่าทุนรวม (฿)',
+    field: 'totalCostValue',
+    align: 'left' as const,
+    sortable: true,
+  },
+  {
+    name: 'totalSaleValue',
+    label: 'มูลค่าขายรวม (฿)',
+    field: 'totalSaleValue',
+    align: 'left' as const,
+    sortable: true,
+  },
 ];
 
 const activeColumns = computed(() => {

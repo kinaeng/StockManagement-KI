@@ -2,7 +2,9 @@
   <q-page class="q-pa-xs-sm q-pa-md">
     <div class="row items-center justify-between q-col-gutter-sm q-mb-md">
       <div class="col-12 col-sm-auto">
-        <h1 class="text-h5 text-sm-h4 text-weight-bold text-primary q-my-none">จัดการใบสั่งซื้อ (Purchase Orders)</h1>
+        <h1 class="text-h5 text-sm-h4 text-weight-bold text-primary q-my-none">
+          จัดการใบสั่งซื้อ (Purchase Orders)
+        </h1>
         <p class="text-caption text-sm-subtitle2 text-grey-7 q-mb-none">
           ติดตามสถานะใบสั่งซื้อสินค้าเข้าคลัง (FR-5.2)
         </p>
@@ -37,7 +39,12 @@
             @update:model-value="(val) => handleStatusChange(props.row.id, val)"
           >
             <template #selected>
-              <q-chip :color="getStatusColor(props.row.status)" text-color="white" size="sm" class="q-ma-none cursor-pointer">
+              <q-chip
+                :color="getStatusColor(props.row.status)"
+                text-color="white"
+                size="sm"
+                class="q-ma-none cursor-pointer"
+              >
                 {{ getStatusLabel(props.row.status) }}
                 <q-icon name="arrow_drop_down" class="q-ml-xs" />
               </q-chip>
@@ -62,7 +69,13 @@
           :options="suppliers.map((s: Supplier) => s.name)"
           label="เลือกผู้จำหน่าย"
         />
-        <q-input v-model.number="form.totalAmount" type="number" outlined dense label="ยอดรวมประมาณการ (บาท)" />
+        <q-input
+          v-model.number="form.totalAmount"
+          type="number"
+          outlined
+          dense
+          label="ยอดรวมประมาณการ (บาท)"
+        />
       </div>
     </BaseModal>
   </q-page>
@@ -82,9 +95,21 @@ const statusOptions = [
 ];
 
 const columns = [
-  { name: 'poNumber', label: 'เลขที่ PO', field: 'poNumber', align: 'left' as const, sortable: true },
+  {
+    name: 'poNumber',
+    label: 'เลขที่ PO',
+    field: 'poNumber',
+    align: 'left' as const,
+    sortable: true,
+  },
   { name: 'supplierName', label: 'ผู้จำหน่าย', field: 'supplierName', align: 'left' as const },
-  { name: 'totalAmount', label: 'ยอดรวม (฿)', field: 'totalAmount', align: 'right' as const, sortable: true },
+  {
+    name: 'totalAmount',
+    label: 'ยอดรวม (฿)',
+    field: 'totalAmount',
+    align: 'left' as const,
+    sortable: true,
+  },
   { name: 'status', label: 'สถานะ (กดเพื่อเปลี่ยน)', field: 'status', align: 'center' as const },
   { name: 'createdAt', label: 'วันที่สั่งซื้อ', field: 'createdAt', align: 'left' as const },
 ];

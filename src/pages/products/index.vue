@@ -1,7 +1,7 @@
 <template>
   <q-page class="q-pa-lg">
-      <!-- Page Header -->
-      <div class="page-header row items-center justify-between">
+    <!-- Page Header -->
+    <div class="page-header row items-center justify-between">
       <div>
         <h1 class="page-header__title">จัดการข้อมูลสินค้า (Products)</h1>
         <p class="page-header__subtitle">
@@ -28,7 +28,7 @@
             dense
             clearable
             :options="categoryOptions"
-            label="กรองตามหมวดหมู่"
+            label="กรองตามตำแหน่ง"
             emit-value
             map-options
           />
@@ -61,11 +61,7 @@
     </q-card>
 
     <!-- Products Table -->
-    <BaseTable
-      title="รายการอะไหล่ทั้งหมด"
-      :rows="filteredProducts"
-      :columns="columns"
-    >
+    <BaseTable title="รายการอะไหล่ทั้งหมด" :rows="filteredProducts" :columns="columns">
       <template #body-cell-type="props">
         <q-td :props="props">
           <q-chip
@@ -112,7 +108,14 @@
           <q-btn flat round dense icon="edit" color="warning" @click="editProduct(props.row)">
             <q-tooltip>แก้ไข</q-tooltip>
           </q-btn>
-          <q-btn flat round dense icon="delete" color="negative" @click="removeProduct(props.row.id)">
+          <q-btn
+            flat
+            round
+            dense
+            icon="delete"
+            color="negative"
+            @click="removeProduct(props.row.id)"
+          >
             <q-tooltip>ลบ</q-tooltip>
           </q-btn>
         </q-td>
@@ -132,7 +135,7 @@
 
         <div class="row q-col-gutter-sm">
           <div class="col-6">
-            <q-input v-model="form.category" outlined dense label="หมวดหมู่" />
+            <q-input v-model="form.category" outlined dense label="ตำแหน่ง" />
           </div>
           <div class="col-6">
             <q-input v-model="form.brand" outlined dense label="ยี่ห้อ" />
@@ -150,16 +153,34 @@
             />
           </div>
           <div class="col-6">
-            <q-input v-model.number="form.reorderPoint" type="number" outlined dense label="จุดสั่งซื้อ (Min Reorder)" />
+            <q-input
+              v-model.number="form.reorderPoint"
+              type="number"
+              outlined
+              dense
+              label="จุดสั่งซื้อ (Min Reorder)"
+            />
           </div>
         </div>
 
         <div class="row q-col-gutter-sm">
           <div class="col-6">
-            <q-input v-model.number="form.costPrice" type="number" outlined dense label="ราคาทุน (บาท)" />
+            <q-input
+              v-model.number="form.costPrice"
+              type="number"
+              outlined
+              dense
+              label="ราคาทุน (บาท)"
+            />
           </div>
           <div class="col-6">
-            <q-input v-model.number="form.salePrice" type="number" outlined dense label="ราคาขาย (บาท)" />
+            <q-input
+              v-model.number="form.salePrice"
+              type="number"
+              outlined
+              dense
+              label="ราคาขาย (บาท)"
+            />
           </div>
         </div>
 
@@ -184,14 +205,31 @@ import { useProducts, type Product } from '@/composables/use-products';
 const { products, addProduct, updateProduct, deleteProduct } = useProducts();
 
 const columns = [
-  { name: 'partNumber', label: 'รหัสสินค้า (Part No.)', field: 'partNumber', align: 'left' as const, sortable: true },
+  {
+    name: 'partNumber',
+    label: 'รหัสสินค้า (Part No.)',
+    field: 'partNumber',
+    align: 'left' as const,
+    sortable: true,
+  },
   { name: 'name', label: 'ชื่อสินค้า', field: 'name', align: 'left' as const, sortable: true },
-  { name: 'category', label: 'หมวดหมู่', field: 'category', align: 'left' as const },
+  { name: 'category', label: 'ตำแหน่ง', field: 'category', align: 'left' as const },
   { name: 'brand', label: 'ยี่ห้อ', field: 'brand', align: 'left' as const },
   { name: 'type', label: 'ประเภท', field: 'type', align: 'center' as const },
-  { name: 'salePrice', label: 'ราคาขาย (฿)', field: 'salePrice', align: 'right' as const },
-  { name: 'stockQty', label: 'สต็อกคงเหลือ', field: 'stockQty', align: 'right' as const, sortable: true },
-  { name: 'crossReferences', label: 'เบอร์เทียบ', field: 'crossReferences', align: 'left' as const },
+  { name: 'salePrice', label: 'ราคาขาย (฿)', field: 'salePrice', align: 'left' as const },
+  {
+    name: 'stockQty',
+    label: 'สต็อกคงเหลือ',
+    field: 'stockQty',
+    align: 'left' as const,
+    sortable: true,
+  },
+  {
+    name: 'crossReferences',
+    label: 'เบอร์เทียบ',
+    field: 'crossReferences',
+    align: 'left' as const,
+  },
   { name: 'actions', label: 'จัดการ', field: 'actions', align: 'right' as const },
 ];
 

@@ -30,11 +30,7 @@
       </q-card-section>
     </q-card>
 
-    <BaseTable
-      title="ประวัติรายการย้อนหลัง"
-      :rows="filteredMovements"
-      :columns="columns"
-    >
+    <BaseTable title="ประวัติรายการย้อนหลัง" :rows="filteredMovements" :columns="columns">
       <template #body-cell-type="props">
         <q-td :props="props">
           <q-chip
@@ -57,7 +53,8 @@
               'text-warning text-weight-bold': props.row.type === 'ADJUST',
             }"
           >
-            {{ props.row.type === 'IN' ? '+' : props.row.type === 'OUT' ? '-' : '' }}{{ props.row.quantity }}
+            {{ props.row.type === 'IN' ? '+' : props.row.type === 'OUT' ? '-' : ''
+            }}{{ props.row.quantity }}
           </span>
         </q-td>
       </template>
@@ -82,11 +79,17 @@ const typeOptions = [
 ];
 
 const columns = [
-  { name: 'createdAt', label: 'วันที่/เวลา', field: 'createdAt', align: 'left' as const, sortable: true },
+  {
+    name: 'createdAt',
+    label: 'วันที่/เวลา',
+    field: 'createdAt',
+    align: 'left' as const,
+    sortable: true,
+  },
   { name: 'type', label: 'ประเภทรายการ', field: 'type', align: 'center' as const },
   { name: 'partNumber', label: 'รหัสสินค้า', field: 'partNumber', align: 'left' as const },
   { name: 'productName', label: 'ชื่อสินค้า', field: 'productName', align: 'left' as const },
-  { name: 'quantity', label: 'จำนวน', field: 'quantity', align: 'right' as const },
+  { name: 'quantity', label: 'จำนวน', field: 'quantity', align: 'left' as const },
   { name: 'refDocument', label: 'เอกสารอ้างอิง', field: 'refDocument', align: 'left' as const },
   { name: 'createdBy', label: 'ผู้ทำรายการ', field: 'createdBy', align: 'left' as const },
   { name: 'note', label: 'หมายเหตุ', field: 'note', align: 'left' as const },
