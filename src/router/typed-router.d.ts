@@ -36,21 +36,6 @@ declare module 'vue-router/auto-routes' {
       '/',
       Record<never, never>,
       Record<never, never>,
-      | '//(index)'
-      | '//second'
-    >,
-    '//(index)': RouteRecordInfo<
-      '//(index)',
-      '/',
-      Record<never, never>,
-      Record<never, never>,
-      | never
-    >,
-    '//second': RouteRecordInfo<
-      '//second',
-      '/second',
-      Record<never, never>,
-      Record<never, never>,
       | never
     >,
     '/[...path]': RouteRecordInfo<
@@ -58,6 +43,90 @@ declare module 'vue-router/auto-routes' {
       '/:path(.*)',
       { path: ParamValue<true> },
       { path: ParamValue<false> },
+      | never
+    >,
+    '/login': RouteRecordInfo<
+      '/login',
+      '/login',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/products/': RouteRecordInfo<
+      '/products/',
+      '/products',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/purchase-orders/': RouteRecordInfo<
+      '/purchase-orders/',
+      '/purchase-orders',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/reports/': RouteRecordInfo<
+      '/reports/',
+      '/reports',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/stock/adjust': RouteRecordInfo<
+      '/stock/adjust',
+      '/stock/adjust',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/stock/alerts': RouteRecordInfo<
+      '/stock/alerts',
+      '/stock/alerts',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/stock/in': RouteRecordInfo<
+      '/stock/in',
+      '/stock/in',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/stock/movements': RouteRecordInfo<
+      '/stock/movements',
+      '/stock/movements',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/stock/out': RouteRecordInfo<
+      '/stock/out',
+      '/stock/out',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/suppliers/': RouteRecordInfo<
+      '/suppliers/',
+      '/suppliers',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/users/': RouteRecordInfo<
+      '/users/',
+      '/users',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/vehicles/compatibility': RouteRecordInfo<
+      '/vehicles/compatibility',
+      '/vehicles/compatibility',
+      Record<never, never>,
+      Record<never, never>,
       | never
     >,
   }
@@ -76,24 +145,6 @@ declare module 'vue-router/auto-routes' {
     'src/pages/index.vue': {
       routes:
         | '/'
-        | '//(index)'
-        | '//second'
-      views:
-        | 'default'
-      pathParamNames:
-        | never
-    }
-    'src/pages/index/(index).vue': {
-      routes:
-        | '//(index)'
-      views:
-        | never
-      pathParamNames:
-        | never
-    }
-    'src/pages/index/second.vue': {
-      routes:
-        | '//second'
       views:
         | never
       pathParamNames:
@@ -106,6 +157,102 @@ declare module 'vue-router/auto-routes' {
         | never
       pathParamNames:
         | 'path'
+    }
+    'src/pages/login.vue': {
+      routes:
+        | '/login'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/products/index.vue': {
+      routes:
+        | '/products/'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/purchase-orders/index.vue': {
+      routes:
+        | '/purchase-orders/'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/reports/index.vue': {
+      routes:
+        | '/reports/'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/stock/adjust.vue': {
+      routes:
+        | '/stock/adjust'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/stock/alerts.vue': {
+      routes:
+        | '/stock/alerts'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/stock/in.vue': {
+      routes:
+        | '/stock/in'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/stock/movements.vue': {
+      routes:
+        | '/stock/movements'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/stock/out.vue': {
+      routes:
+        | '/stock/out'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/suppliers/index.vue': {
+      routes:
+        | '/suppliers/'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/users/index.vue': {
+      routes:
+        | '/users/'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/vehicles/compatibility.vue': {
+      routes:
+        | '/vehicles/compatibility'
+      views:
+        | never
+      pathParamNames:
+        | never
     }
   }
 
