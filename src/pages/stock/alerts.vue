@@ -1,22 +1,21 @@
 <template>
   <q-page class="q-pa-lg">
     <!-- Page Header -->
-    <div class="page-header row items-center justify-between">
-      <div>
-        <h1 class="page-header__title">แจ้งเตือนสต็อกต่ำ (Low Stock Alerts)</h1>
-        <p class="page-header__subtitle">
-          รายการสินค้าที่จำนวนคงเหลือต่ำกว่าจุดสั่งซื้อเพิ่ม (Reorder Point) (FR-4.1, FR-4.2)
-        </p>
-      </div>
-      <q-btn
-        color="negative"
-        icon="add_shopping_cart"
-        label="สร้าง PO รวมจากรายการเตือน"
-        no-caps
-        unelevated
-        to="/purchase-orders"
-      />
-    </div>
+    <BasePageHeader
+      title="แจ้งเตือนสต็อกต่ำ (Low Stock Alerts)"
+      subtitle="รายการสินค้าที่จำนวนคงเหลือต่ำกว่าจุดสั่งซื้อเพิ่ม (Reorder Point) (FR-4.1, FR-4.2)"
+    >
+      <template #actions>
+        <q-btn
+          color="negative"
+          icon="add_shopping_cart"
+          label="สร้าง PO รวมจากรายการเตือน"
+          no-caps
+          unelevated
+          to="/purchase-orders"
+        />
+      </template>
+    </BasePageHeader>
 
     <!-- Low Stock Table -->
     <BaseTable title="สินค้าที่ต้องสั่งซื้อด่วน" :rows="lowStockProducts" :columns="columns">
@@ -55,6 +54,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import BasePageHeader from '@/components/base/BasePageHeader.vue';
 import BaseTable from '@/components/base/BaseTable.vue';
 import { useProducts, type Product } from '@/composables/use-products';
 

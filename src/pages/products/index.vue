@@ -1,22 +1,21 @@
 <template>
   <q-page class="q-pa-lg">
     <!-- Page Header -->
-    <div class="page-header row items-center justify-between">
-      <div>
-        <h1 class="page-header__title">จัดการข้อมูลสินค้า (Products)</h1>
-        <p class="page-header__subtitle">
-          รายการอะไหล่มอเตอร์ไซค์ทั้งหมดและเบอร์อะไหล่เทียบ (FR-1)
-        </p>
-      </div>
-      <q-btn
-        color="primary"
-        icon="add"
-        label="เพิ่มสินค้าใหม่"
-        no-caps
-        unelevated
-        @click="openAddModal"
-      />
-    </div>
+    <BasePageHeader
+      title="จัดการข้อมูลสินค้า (Products)"
+      subtitle="รายการอะไหล่มอเตอร์ไซค์ทั้งหมดและเบอร์อะไหล่เทียบ (FR-1)"
+    >
+      <template #actions>
+        <q-btn
+          color="primary"
+          icon="add"
+          label="เพิ่มสินค้าใหม่"
+          no-caps
+          unelevated
+          @click="openAddModal"
+        />
+      </template>
+    </BasePageHeader>
 
     <!-- Filter Bar -->
     <q-card flat bordered class="q-mb-md">
@@ -198,6 +197,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue';
+import BasePageHeader from '@/components/base/BasePageHeader.vue';
 import BaseTable from '@/components/base/BaseTable.vue';
 import BaseModal from '@/components/base/BaseModal.vue';
 import { useProducts, type Product } from '@/composables/use-products';

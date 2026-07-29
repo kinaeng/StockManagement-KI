@@ -1,15 +1,10 @@
 <template>
   <q-page class="q-pa-xs-sm q-pa-md">
-    <div class="row items-center justify-between q-col-gutter-sm q-mb-md">
-      <div class="col-12 col-sm-auto">
-        <h1 class="text-h5 text-sm-h4 text-weight-bold text-primary q-my-none">
-          จัดการใบสั่งซื้อ (Purchase Orders)
-        </h1>
-        <p class="text-caption text-sm-subtitle2 text-grey-7 q-mb-none">
-          ติดตามสถานะใบสั่งซื้อสินค้าเข้าคลัง (FR-5.2)
-        </p>
-      </div>
-      <div class="col-12 col-sm-auto text-right">
+    <BasePageHeader
+      title="จัดการใบสั่งซื้อ (Purchase Orders)"
+      subtitle="ติดตามสถานะใบสั่งซื้อสินค้าเข้าคลัง (FR-5.2)"
+    >
+      <template #actions>
         <q-btn
           color="primary"
           icon="add_shopping_cart"
@@ -17,8 +12,8 @@
           class="full-width-xs"
           @click="isModalOpen = true"
         />
-      </div>
-    </div>
+      </template>
+    </BasePageHeader>
 
     <BaseTable
       title="รายการใบสั่งซื้อทั้งหมด"
@@ -83,6 +78,7 @@
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue';
+import BasePageHeader from '@/components/base/BasePageHeader.vue';
 import BaseTable from '@/components/base/BaseTable.vue';
 import BaseModal from '@/components/base/BaseModal.vue';
 import { useSuppliers, type PurchaseOrder, type Supplier } from '@/composables/use-suppliers';

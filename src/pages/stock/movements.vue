@@ -1,11 +1,9 @@
 <template>
   <q-page class="q-pa-lg">
-    <div class="page-header">
-      <h1 class="page-header__title">ประวัติการเคลื่อนไหวสต็อก (Stock Movement Log)</h1>
-      <p class="page-header__subtitle">
-        ตรวจสอบประวัติการรับ-จ่าย และการปรับปรุงสต็อกสินค้าทั้งหมด (FR-3.5)
-      </p>
-    </div>
+    <BasePageHeader
+      title="ประวัติการเคลื่อนไหวสต็อก (Stock Movement Log)"
+      subtitle="ตรวจสอบประวัติการรับ-จ่าย และการปรับปรุงสต็อกสินค้าทั้งหมด (FR-3.5)"
+    />
 
     <!-- Filters -->
     <q-card flat bordered class="q-mb-md">
@@ -64,6 +62,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import BasePageHeader from '@/components/base/BasePageHeader.vue';
 import BaseTable from '@/components/base/BaseTable.vue';
 import { useStock, type MovementType, type StockMovement } from '@/composables/use-stock';
 

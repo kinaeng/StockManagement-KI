@@ -1,12 +1,9 @@
 <template>
   <q-page class="q-pa-lg">
-    <div class="page-header">
-      <h1 class="page-header__title">ระบบรายงานและวิเคราะห์ (Reports & Analytics)</h1>
-      <p class="page-header__subtitle">
-        ออกรายงานสินค้าคงคลัง สินค้าเคลื่อนไหวเร็ว/ช้า และประเมินมูลค่าสินค้าคงคลัง (FR-6.1 -
-        FR-6.4)
-      </p>
-    </div>
+    <BasePageHeader
+      title="ระบบรายงานและวิเคราะห์ (Reports & Analytics)"
+      subtitle="ออกรายงานสินค้าคงคลัง สินค้าเคลื่อนไหวเร็ว/ช้า และประเมินมูลค่าสินค้าคงคลัง (FR-6.1 - FR-6.4)"
+    />
 
     <!-- Report Selector Cards -->
     <div class="row q-col-gutter-md q-mb-lg">
@@ -114,6 +111,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import BasePageHeader from '@/components/base/BasePageHeader.vue';
 import BaseTable from '@/components/base/BaseTable.vue';
 import { useProducts, type Product } from '@/composables/use-products';
 
