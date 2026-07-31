@@ -1,11 +1,10 @@
 <template>
   <q-page class="q-pa-lg">
-      <div class="page-header">
-      <h1 class="page-header__title">
-        ตารางเปรียบเทียบความเข้ากันได้อะไหล่
-      </h1>
+    <div class="page-header">
+      <h1 class="page-header__title">ตารางเปรียบเทียบความเข้ากันได้อะไหล่</h1>
       <p class="page-header__subtitle">
-        เปรียบเทียบและค้นหาว่าอะไหล่แต่ละรุ่นใช้ร่วมกับรุ่นรถไหนได้บ้าง หรือรุ่นรถใดใช้อะไหล่เหมือนกัน
+        เปรียบเทียบและค้นหาว่าอะไหล่แต่ละรุ่นใช้ร่วมกับรุ่นรถไหนได้บ้าง
+        หรือรุ่นรถใดใช้อะไหล่เหมือนกัน
       </p>
     </div>
 
@@ -47,7 +46,10 @@
                 <q-item v-bind="scope.itemProps">
                   <q-item-section>
                     <q-item-label>{{ scope.opt.name }}</q-item-label>
-                    <q-item-label caption>รหัส: {{ scope.opt.partNumber }} | ยี่ห้อ: {{ scope.opt.brand }}</q-item-label>
+                    <q-item-label caption
+                      >รหัส: {{ scope.opt.partNumber }} | ยี่ห้อ:
+                      {{ scope.opt.brand }}</q-item-label
+                    >
                   </q-item-section>
                 </q-item>
               </template>
@@ -80,7 +82,9 @@
                 <q-item v-bind="scope.itemProps">
                   <q-item-section>
                     <q-item-label>{{ scope.opt.brand }} {{ scope.opt.model }}</q-item-label>
-                    <q-item-label caption>ปี {{ scope.opt.yearRange }} ({{ scope.opt.engineCc }} cc)</q-item-label>
+                    <q-item-label caption
+                      >ปี {{ scope.opt.yearRange }} ({{ scope.opt.engineCc }} cc)</q-item-label
+                    >
                   </q-item-section>
                 </q-item>
               </template>
@@ -108,6 +112,7 @@
         <q-tab name="vehicleToParts" icon="directions_bike" label="ค้นหาอะไหล่ตามรุ่นรถ" />
         <q-tab name="crossReference" icon="compare" label="เปรียบเทียบข้ามรุ่น" />
         <q-tab name="autoSuggestions" icon="auto_awesome" label="คำแนะนำอัตโนมัติ" />
+        <q-tab name="photoLookup" icon="photo_camera" label="ค้นหาจากรูปรถ" />
       </q-tabs>
 
       <q-separator />
@@ -119,7 +124,7 @@
             <q-icon name="directions_bike" class="q-mr-sm" />
             ค้นหาอะไหล่ที่ใช้ได้กับรุ่นรถ
           </div>
-          
+
           <div class="row q-col-gutter-md items-center q-mb-md">
             <div class="col-12 col-md-6">
               <q-select
@@ -138,7 +143,9 @@
                   <q-item v-bind="scope.itemProps">
                     <q-item-section>
                       <q-item-label>{{ scope.opt.brand }} {{ scope.opt.model }}</q-item-label>
-                      <q-item-label caption>ปี {{ scope.opt.yearRange }} ({{ scope.opt.engineCc }} cc)</q-item-label>
+                      <q-item-label caption
+                        >ปี {{ scope.opt.yearRange }} ({{ scope.opt.engineCc }} cc)</q-item-label
+                      >
                     </q-item-section>
                   </q-item>
                 </template>
@@ -147,8 +154,12 @@
             <div class="col-12 col-md-6" v-if="selectedVehicle">
               <q-card flat class="bg-blue-1 q-pa-md">
                 <div class="text-caption text-blue-8">รุ่นที่เลือก:</div>
-                <div class="text-weight-bold">{{ selectedVehicle.brand }} {{ selectedVehicle.model }}</div>
-                <div class="text-caption">{{ selectedVehicle.yearRange }} | {{ selectedVehicle.engineCc }} cc</div>
+                <div class="text-weight-bold">
+                  {{ selectedVehicle.brand }} {{ selectedVehicle.model }}
+                </div>
+                <div class="text-caption">
+                  {{ selectedVehicle.yearRange }} | {{ selectedVehicle.engineCc }} cc
+                </div>
               </q-card>
             </div>
           </div>
@@ -158,7 +169,9 @@
               <div class="text-h6">
                 <q-icon name="build" class="q-mr-sm" />
                 อะไหล่ที่ใช้ได้กับ {{ selectedVehicle.brand }} {{ selectedVehicle.model }}
-                <q-chip color="white" text-color="primary" class="q-ml-sm">{{ matchingProducts.length }} รายการ</q-chip>
+                <q-chip color="white" text-color="primary" class="q-ml-sm"
+                  >{{ matchingProducts.length }} รายการ</q-chip
+                >
               </div>
             </q-card-section>
             <q-list separator>
@@ -174,22 +187,24 @@
                 </q-item-section>
                 <q-item-section side class="row items-center">
                   <div class="column items-end q-mr-md">
-                    <div class="text-weight-bold text-primary">฿{{ part.salePrice?.toLocaleString() }}</div>
-                    <q-chip 
-                      size="xs" 
-                      :color="part.stockQty > 0 ? 'positive' : 'negative'" 
+                    <div class="text-weight-bold text-primary">
+                      ฿{{ part.salePrice?.toLocaleString() }}
+                    </div>
+                    <q-chip
+                      size="xs"
+                      :color="part.stockQty > 0 ? 'positive' : 'negative'"
                       text-color="white"
                     >
                       คงเหลือ: {{ part.stockQty }}
                     </q-chip>
                   </div>
-                  <q-btn 
-                    flat 
-                    round 
-                    dense 
-                    icon="link_off" 
-                    color="negative" 
-                    size="sm" 
+                  <q-btn
+                    flat
+                    round
+                    dense
+                    icon="link_off"
+                    color="negative"
+                    size="sm"
                     @click="handleRemoveLink(part.id, selectedVehicle.id)"
                   >
                     <q-tooltip>ยกเลิกการเชื่อมโยง</q-tooltip>
@@ -215,7 +230,7 @@
             <q-icon name="compare" class="q-mr-sm" />
             เปรียบเทียบข้ามรุ่นรถ
           </div>
-          
+
           <div class="row q-col-gutter-md q-mb-lg">
             <div class="col-12 col-md-6">
               <q-select
@@ -245,7 +260,10 @@
                   <q-item v-bind="scope.itemProps">
                     <q-item-section>
                       <q-item-label>{{ scope.opt.name }}</q-item-label>
-                      <q-item-label caption>รหัส: {{ scope.opt.partNumber }} | ยี่ห้อ: {{ scope.opt.brand }}</q-item-label>
+                      <q-item-label caption
+                        >รหัส: {{ scope.opt.partNumber }} | ยี่ห้อ:
+                        {{ scope.opt.brand }}</q-item-label
+                      >
                     </q-item-section>
                   </q-item>
                 </template>
@@ -279,7 +297,9 @@
                   <q-item v-bind="scope.itemProps">
                     <q-item-section>
                       <q-item-label>{{ scope.opt.brand }} {{ scope.opt.model }}</q-item-label>
-                      <q-item-label caption>{{ scope.opt.yearRange }} ({{ scope.opt.engineCc }} cc)</q-item-label>
+                      <q-item-label caption
+                        >{{ scope.opt.yearRange }} ({{ scope.opt.engineCc }} cc)</q-item-label
+                      >
                     </q-item-section>
                   </q-item>
                 </template>
@@ -299,12 +319,16 @@
                   <div class="col-12 col-md-6">
                     <div class="text-weight-bold text-blue-8">สินค้า:</div>
                     <div>{{ crossRefProduct.name }}</div>
-                    <div class="text-caption">{{ crossRefProduct.partNumber }} | {{ crossRefProduct.brand }}</div>
+                    <div class="text-caption">
+                      {{ crossRefProduct.partNumber }} | {{ crossRefProduct.brand }}
+                    </div>
                   </div>
                   <div class="col-12 col-md-6">
                     <div class="text-weight-bold text-blue-8">รุ่นรถของลูกค้า:</div>
                     <div>{{ crossRefVehicle.brand }} {{ crossRefVehicle.model }}</div>
-                    <div class="text-caption">{{ crossRefVehicle.yearRange }} ({{ crossRefVehicle.engineCc }} cc)</div>
+                    <div class="text-caption">
+                      {{ crossRefVehicle.yearRange }} ({{ crossRefVehicle.engineCc }} cc)
+                    </div>
                   </div>
                 </div>
               </q-card-section>
@@ -343,15 +367,15 @@
                     <q-avatar color="orange-1" text-color="orange-8" icon="two_wheeler" />
                   </q-item-section>
                   <q-item-section>
-                    <q-item-label class="text-weight-bold">{{ vehicle.brand }} {{ vehicle.model }}</q-item-label>
+                    <q-item-label class="text-weight-bold"
+                      >{{ vehicle.brand }} {{ vehicle.model }}</q-item-label
+                    >
                     <q-item-label caption>
                       ปีผลิต: {{ vehicle.yearRange }} | ขนาดเครื่องยนต์: {{ vehicle.engineCc }} cc
                     </q-item-label>
                   </q-item-section>
                   <q-item-section side>
-                    <q-chip color="positive" text-color="white" size="sm">
-                      ใช้ได้
-                    </q-chip>
+                    <q-chip color="positive" text-color="white" size="sm"> ใช้ได้ </q-chip>
                   </q-item-section>
                 </q-item>
               </q-list>
@@ -362,21 +386,27 @@
               <q-card-section class="bg-grey-8 text-white">
                 <div class="text-subtitle1">
                   <q-icon name="summarize" class="q-mr-sm" />
-                  สรุป: สินค้า "{{ crossRefProduct.name }}" ใช้ได้กับรุ่นรถทั้งหมด {{ allCompatibleVehicles.length }} รุ่น
+                  สรุป: สินค้า "{{ crossRefProduct.name }}" ใช้ได้กับรุ่นรถทั้งหมด
+                  {{ allCompatibleVehicles.length }} รุ่น
                 </div>
               </q-card-section>
               <q-card-section class="q-pa-md">
                 <div class="row">
                   <div class="col-12">
-                    <q-chip 
-                      v-for="vehicle in allCompatibleVehicles" 
-                      :key="vehicle.id" 
+                    <q-chip
+                      v-for="vehicle in allCompatibleVehicles"
+                      :key="vehicle.id"
                       :color="vehicle.id === crossRefVehicleId ? 'primary' : 'grey-5'"
                       :text-color="vehicle.id === crossRefVehicleId ? 'white' : 'dark'"
                       class="q-ma-xs"
                     >
                       {{ vehicle.brand }} {{ vehicle.model }}
-                      <q-icon name="star" v-if="vehicle.id === crossRefVehicleId" class="q-ml-xs" size="16px" />
+                      <q-icon
+                        name="star"
+                        v-if="vehicle.id === crossRefVehicleId"
+                        class="q-ml-xs"
+                        size="16px"
+                      />
                     </q-chip>
                   </div>
                 </div>
@@ -407,13 +437,221 @@
             <q-icon name="auto_awesome" class="q-mr-sm" />
             คำแนะนำการเชื่อมโยงอัตโนมัติ
           </div>
-          
-          <AutoLinkSuggestions 
+
+          <AutoLinkSuggestions
             :refresh-trigger="autoSuggestionsRefreshTrigger"
             @suggestion-confirmed="handleSuggestionConfirmed"
             @suggestion-dismissed="handleSuggestionDismissed"
             @bulk-confirmed="handleBulkConfirmed"
           />
+        </q-tab-panel>
+
+        <!-- Tab 4: Vehicle Photo Lookup Demo -->
+        <q-tab-panel name="photoLookup">
+          <div class="vehicle-photo-demo">
+            <div class="vehicle-photo-demo__header">
+              <div>
+                <div class="text-h6 text-primary q-mb-xs">
+                  <q-icon name="photo_camera" class="q-mr-sm" />
+                  ค้นหารุ่นรถจากรูปภาพ
+                </div>
+                <div class="text-body2 text-grey-7">
+                  อัปโหลดรูปรถเพื่อจำลองการวิเคราะห์รุ่น ปีผลิต และความใกล้เคียงกับฐานข้อมูลรถในระบบ
+                </div>
+              </div>
+              <q-chip color="blue-1" text-color="blue-8" icon="science" size="sm">Demo mock</q-chip>
+            </div>
+
+            <div class="row q-col-gutter-lg">
+              <div class="col-12 col-md-5">
+                <div
+                  class="vehicle-photo-demo__dropzone"
+                  :class="{
+                    'vehicle-photo-demo__dropzone--has-image': Boolean(vehiclePhotoPreviewUrl),
+                  }"
+                >
+                  <q-img
+                    v-if="vehiclePhotoPreviewUrl"
+                    :src="vehiclePhotoPreviewUrl"
+                    ratio="4/3"
+                    fit="cover"
+                    class="vehicle-photo-demo__preview"
+                  />
+                  <div v-else class="vehicle-photo-demo__empty">
+                    <q-icon name="add_a_photo" size="56px" color="primary" />
+                    <div class="text-weight-bold q-mt-md">เลือกรูปรถสำหรับวิเคราะห์</div>
+                    <div class="text-caption text-grey-6">รองรับ JPG, PNG หรือ WEBP</div>
+                  </div>
+                </div>
+
+                <q-file
+                  v-model="vehiclePhotoFile"
+                  outlined
+                  dense
+                  accept="image/*"
+                  class="q-mt-md"
+                  label="อัปโหลดรูปรถ"
+                  clearable
+                  @update:model-value="handleVehiclePhotoSelected"
+                  @clear="resetVehiclePhotoLookup"
+                >
+                  <template #prepend>
+                    <q-icon name="upload_file" />
+                  </template>
+                </q-file>
+
+                <div class="row q-col-gutter-sm q-mt-sm">
+                  <div class="col-12 col-sm-6">
+                    <q-btn
+                      color="primary"
+                      icon="psychology"
+                      label="วิเคราะห์รูป"
+                      class="full-width"
+                      unelevated
+                      :loading="vehiclePhotoAnalyzing"
+                      :disable="!vehiclePhotoFile"
+                      @click="analyzeVehiclePhoto"
+                    />
+                  </div>
+                  <div class="col-12 col-sm-6">
+                    <q-btn
+                      outline
+                      color="grey-8"
+                      icon="restart_alt"
+                      label="เริ่มใหม่"
+                      class="full-width"
+                      :disable="!vehiclePhotoFile && !vehiclePhotoResult"
+                      @click="resetVehiclePhotoLookup"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-12 col-md-7">
+                <q-card
+                  v-if="vehiclePhotoAnalyzing"
+                  flat
+                  bordered
+                  class="vehicle-photo-demo__state"
+                >
+                  <q-card-section class="text-center q-py-xl">
+                    <q-spinner-dots color="primary" size="44px" />
+                    <div class="text-weight-bold q-mt-md">กำลังวิเคราะห์รูปรถ...</div>
+                    <div class="text-caption text-grey-6">
+                      ระบบ demo กำลังเทียบรูปกับฐานข้อมูลรุ่นรถ
+                    </div>
+                  </q-card-section>
+                </q-card>
+
+                <q-card
+                  v-else-if="vehiclePhotoResult"
+                  flat
+                  bordered
+                  class="vehicle-photo-demo__result"
+                >
+                  <q-card-section>
+                    <div class="row items-start q-col-gutter-md">
+                      <div class="col">
+                        <div class="text-caption text-grey-7">ผลลัพธ์ที่ใกล้เคียงที่สุด</div>
+                        <div class="vehicle-photo-demo__model">
+                          {{ vehiclePhotoResult.vehicle.brand }}
+                          {{ vehiclePhotoResult.vehicle.model }}
+                        </div>
+                        <div class="text-body2 text-grey-7">
+                          ปี {{ vehiclePhotoResult.vehicle.yearRange }} |
+                          {{ vehiclePhotoResult.vehicle.engineCc }} cc
+                        </div>
+                      </div>
+                      <div class="col-auto">
+                        <q-circular-progress
+                          show-value
+                          font-size="13px"
+                          :value="vehiclePhotoResult.confidence"
+                          size="72px"
+                          :thickness="0.16"
+                          color="positive"
+                          track-color="green-1"
+                        >
+                          {{ vehiclePhotoResult.confidence }}%
+                        </q-circular-progress>
+                      </div>
+                    </div>
+
+                    <q-separator class="q-my-md" />
+
+                    <div class="text-subtitle2 q-mb-sm">เหตุผลประกอบการจำลอง</div>
+                    <div class="row q-col-gutter-sm q-mb-md">
+                      <div
+                        v-for="signal in vehiclePhotoResult.signals"
+                        :key="signal"
+                        class="col-12 col-sm-6"
+                      >
+                        <q-chip
+                          class="full-width justify-start"
+                          color="blue-1"
+                          text-color="blue-9"
+                          icon="check_circle"
+                        >
+                          {{ signal }}
+                        </q-chip>
+                      </div>
+                    </div>
+
+                    <q-btn
+                      color="primary"
+                      icon="directions_bike"
+                      label="ใช้รุ่นนี้ค้นหาอะไหล่"
+                      unelevated
+                      @click="usePhotoDetectedVehicle(vehiclePhotoResult.vehicle.id)"
+                    />
+                  </q-card-section>
+
+                  <q-separator />
+
+                  <q-card-section v-if="vehiclePhotoResult.alternatives.length > 0">
+                    <div class="text-subtitle2 q-mb-sm">รุ่นใกล้เคียง</div>
+                    <q-list bordered separator class="rounded-borders">
+                      <q-item
+                        v-for="candidate in vehiclePhotoResult.alternatives"
+                        :key="candidate.vehicle.id"
+                        clickable
+                        @click="usePhotoDetectedVehicle(candidate.vehicle.id)"
+                      >
+                        <q-item-section avatar>
+                          <q-avatar color="orange-1" text-color="orange-8" icon="two_wheeler" />
+                        </q-item-section>
+                        <q-item-section>
+                          <q-item-label
+                            >{{ candidate.vehicle.brand }}
+                            {{ candidate.vehicle.model }}</q-item-label
+                          >
+                          <q-item-label caption>
+                            ปี {{ candidate.vehicle.yearRange }} |
+                            {{ candidate.vehicle.engineCc }} cc
+                          </q-item-label>
+                        </q-item-section>
+                        <q-item-section side>
+                          <q-chip size="sm" color="grey-2" text-color="grey-8"
+                            >{{ candidate.confidence }}%</q-chip
+                          >
+                        </q-item-section>
+                      </q-item>
+                    </q-list>
+                  </q-card-section>
+                </q-card>
+
+                <q-card v-else flat bordered class="vehicle-photo-demo__state">
+                  <q-card-section class="text-center q-py-xl">
+                    <q-icon name="image_search" size="56px" class="text-grey-5 q-mb-md" />
+                    <div class="text-weight-bold text-grey-8">ยังไม่มีผลการวิเคราะห์</div>
+                    <div class="text-caption text-grey-6">
+                      เลือกรูปแล้วกดวิเคราะห์ ระบบจะแสดงรุ่นรถ ปีผลิต และความมั่นใจ
+                    </div>
+                  </q-card-section>
+                </q-card>
+              </div>
+            </div>
+          </div>
         </q-tab-panel>
       </q-tab-panels>
     </q-card>
@@ -421,13 +659,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onBeforeUnmount } from 'vue';
 import { useVehicles, type VehicleModel, type CompatibilityMap } from '@/composables/use-vehicles';
 import { useProducts, type Product } from '@/composables/use-products';
 import AutoLinkSuggestions from '@/components/parts/AutoLinkSuggestions.vue';
 import type { LinkSuggestion } from '@/services/mockCompatibilityService';
 
-const tab = ref<'vehicleToParts' | 'crossReference' | 'autoSuggestions'>('vehicleToParts');
+const tab = ref<'vehicleToParts' | 'crossReference' | 'autoSuggestions' | 'photoLookup'>(
+  'vehicleToParts',
+);
 
 const { vehicleModels, compatibilities, addCompatibility, removeCompatibility } = useVehicles();
 const { products } = useProducts();
@@ -454,6 +694,21 @@ const crossVehicleSearchQuery = ref<string>('');
 const filteredCrossProducts = ref(products.value);
 const filteredCrossVehicles = ref(vehicleModels.value);
 
+interface VehiclePhotoCandidate {
+  vehicle: VehicleModel;
+  confidence: number;
+}
+
+interface VehiclePhotoResult extends VehiclePhotoCandidate {
+  signals: string[];
+  alternatives: VehiclePhotoCandidate[];
+}
+
+const vehiclePhotoFile = ref<File | null>(null);
+const vehiclePhotoPreviewUrl = ref<string | null>(null);
+const vehiclePhotoAnalyzing = ref(false);
+const vehiclePhotoResult = ref<VehiclePhotoResult | null>(null);
+
 // Computed properties
 const selectedVehicle = computed((): VehicleModel | undefined =>
   vehicleModels.value.find((v: VehicleModel) => v.id === selectedVehicleId.value),
@@ -479,7 +734,7 @@ const crossRefVehicle = computed((): VehicleModel | undefined =>
 const isCurrentCombinationCompatible = computed((): boolean => {
   if (!crossRefProductId.value || !crossRefVehicleId.value) return false;
   return compatibilities.value.some(
-    (c) => c.productId === crossRefProductId.value && c.vehicleModelId === crossRefVehicleId.value
+    (c) => c.productId === crossRefProductId.value && c.vehicleModelId === crossRefVehicleId.value,
   );
 });
 
@@ -506,7 +761,7 @@ function filterProducts(val: string, update: (callback: () => void) => void): vo
         (product) =>
           product.name.toLowerCase().includes(needle) ||
           product.partNumber.toLowerCase().includes(needle) ||
-          product.brand.toLowerCase().includes(needle)
+          product.brand.toLowerCase().includes(needle),
       );
     }
   });
@@ -522,7 +777,7 @@ function filterVehicles(val: string, update: (callback: () => void) => void): vo
         (vehicle) =>
           vehicle.brand.toLowerCase().includes(needle) ||
           vehicle.model.toLowerCase().includes(needle) ||
-          vehicle.yearRange.toLowerCase().includes(needle)
+          vehicle.yearRange.toLowerCase().includes(needle),
       );
     }
   });
@@ -538,7 +793,7 @@ function filterCrossProducts(val: string, update: (callback: () => void) => void
         (product) =>
           product.name.toLowerCase().includes(needle) ||
           product.partNumber.toLowerCase().includes(needle) ||
-          product.brand.toLowerCase().includes(needle)
+          product.brand.toLowerCase().includes(needle),
       );
     }
   });
@@ -554,7 +809,7 @@ function filterCrossVehicles(val: string, update: (callback: () => void) => void
         (vehicle) =>
           vehicle.brand.toLowerCase().includes(needle) ||
           vehicle.model.toLowerCase().includes(needle) ||
-          vehicle.yearRange.toLowerCase().includes(needle)
+          vehicle.yearRange.toLowerCase().includes(needle),
       );
     }
   });
@@ -597,9 +852,9 @@ function handleSuggestionConfirmed(suggestion: LinkSuggestion): void {
   addCompatibility({
     productId: suggestion.partId,
     vehicleModelId: suggestion.vehicleModelId,
-    note: `อัตโนมัติ: ${suggestion.source} (${suggestion.confidence}%)`
+    note: `อัตโนมัติ: ${suggestion.source} (${suggestion.confidence}%)`,
   });
-  
+
   // Show success message
   console.log('✅ เชื่อมโยงอัตโนมัติสำเร็จ:', suggestion);
 }
@@ -611,17 +866,198 @@ function handleSuggestionDismissed(suggestion: LinkSuggestion): void {
 
 function handleBulkConfirmed(suggestions: LinkSuggestion[]): void {
   // Add all confirmed suggestions
-  suggestions.forEach(suggestion => {
+  suggestions.forEach((suggestion) => {
     addCompatibility({
       productId: suggestion.partId,
       vehicleModelId: suggestion.vehicleModelId,
-      note: `อัตโนมัติ: ${suggestion.source} (${suggestion.confidence}%)`
+      note: `อัตโนมัติ: ${suggestion.source} (${suggestion.confidence}%)`,
     });
   });
-  
+
   console.log(`✅ เชื่อมโยงอัตโนมัติ ${suggestions.length} รายการสำเร็จ`);
-  
+
   // Optionally refresh suggestions to get new ones
   autoSuggestionsRefreshTrigger.value++;
 }
+
+function handleVehiclePhotoSelected(file: File | null): void {
+  revokeVehiclePhotoPreview();
+  vehiclePhotoResult.value = null;
+
+  if (!file) {
+    vehiclePhotoFile.value = null;
+    return;
+  }
+
+  vehiclePhotoFile.value = file;
+  vehiclePhotoPreviewUrl.value = URL.createObjectURL(file);
+}
+
+async function analyzeVehiclePhoto(): Promise<void> {
+  if (!vehiclePhotoFile.value) return;
+
+  vehiclePhotoAnalyzing.value = true;
+  vehiclePhotoResult.value = null;
+
+  await new Promise((resolve) => setTimeout(resolve, 1100));
+
+  const fileName = vehiclePhotoFile.value.name.toLowerCase();
+  const fileSeed = Array.from(vehiclePhotoFile.value.name).reduce(
+    (sum, char) => sum + char.charCodeAt(0),
+    vehiclePhotoFile.value.size,
+  );
+  const keywordVehicle = findVehicleByPhotoKeyword(fileName);
+  const primaryIndex = fileSeed % vehicleModels.value.length;
+  const primaryVehicle =
+    keywordVehicle ?? vehicleModels.value[primaryIndex] ?? vehicleModels.value[0];
+
+  if (!primaryVehicle) {
+    vehiclePhotoAnalyzing.value = false;
+    return;
+  }
+
+  const alternatives = vehicleModels.value
+    .filter((vehicle) => vehicle.id !== primaryVehicle.id)
+    .slice(0, 3)
+    .map((vehicle, index) => ({
+      vehicle,
+      confidence: Math.max(61, 78 - index * 7),
+    }));
+
+  vehiclePhotoResult.value = {
+    vehicle: primaryVehicle,
+    confidence: keywordVehicle ? 96 : 88 + (fileSeed % 8),
+    signals: [
+      keywordVehicle
+        ? `พบคำใบ้จากชื่อไฟล์ "${vehiclePhotoFile.value.name}"`
+        : 'ทรงตัวถังและไฟหน้าใกล้เคียง',
+      `ขนาดเครื่องยนต์ประมาณ ${primaryVehicle.engineCc} cc`,
+      `ฐานข้อมูลปีผลิต ${primaryVehicle.yearRange}`,
+      'เทียบจากข้อมูล mock ในระบบ',
+    ],
+    alternatives,
+  };
+  vehiclePhotoAnalyzing.value = false;
+}
+
+function findVehicleByPhotoKeyword(fileName: string): VehicleModel | undefined {
+  const keywordToModel: Array<[string, string]> = [
+    ['fino', 'fino'],
+    ['mio', 'fino'],
+    ['wave', 'wave'],
+    ['click', 'click'],
+    ['scoopy', 'scoopy'],
+    ['pcx', 'pcx'],
+    ['spark', 'spark'],
+    ['exciter', 'exciter'],
+    ['nmax', 'nmax'],
+    ['aerox', 'aerox'],
+    ['raider', 'raider'],
+    ['ninja', 'ninja'],
+    ['z250', 'z250'],
+  ];
+
+  const match = keywordToModel.find(([keyword]) => fileName.includes(keyword));
+  if (!match) return undefined;
+
+  const [, modelKeyword] = match;
+  return vehicleModels.value.find((vehicle) => vehicle.model.toLowerCase().includes(modelKeyword));
+}
+
+function usePhotoDetectedVehicle(vehicleId: number): void {
+  selectedVehicleId.value = vehicleId;
+  tab.value = 'vehicleToParts';
+}
+
+function resetVehiclePhotoLookup(): void {
+  vehiclePhotoFile.value = null;
+  vehiclePhotoResult.value = null;
+  vehiclePhotoAnalyzing.value = false;
+  revokeVehiclePhotoPreview();
+}
+
+function revokeVehiclePhotoPreview(): void {
+  if (vehiclePhotoPreviewUrl.value) {
+    URL.revokeObjectURL(vehiclePhotoPreviewUrl.value);
+    vehiclePhotoPreviewUrl.value = null;
+  }
+}
+
+onBeforeUnmount(() => {
+  revokeVehiclePhotoPreview();
+});
 </script>
+
+<style lang="scss" scoped>
+.vehicle-photo-demo {
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  &__dropzone {
+    min-height: 280px;
+    border: 1px dashed #93c5fd;
+    border-radius: var(--radius-lg);
+    background: #eff6ff;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &__dropzone--has-image {
+    border-style: solid;
+    background: #ffffff;
+  }
+
+  &__preview {
+    width: 100%;
+    height: 100%;
+  }
+
+  &__empty {
+    min-height: 260px;
+    padding: 32px 20px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &__state,
+  &__result {
+    min-height: 280px;
+    background: #ffffff;
+  }
+
+  &__model {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-main);
+    line-height: var(--line-height-tight);
+    margin-top: 4px;
+    margin-bottom: 4px;
+  }
+}
+
+@media (max-width: 599px) {
+  .vehicle-photo-demo {
+    &__header {
+      display: block;
+    }
+
+    &__header .q-chip {
+      margin-top: 12px;
+    }
+
+    &__model {
+      font-size: var(--font-size-xl);
+    }
+  }
+}
+</style>
