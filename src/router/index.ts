@@ -1,5 +1,5 @@
 import { defineRouter } from '#q-app';
-import { routes, handleHotUpdate } from 'vue-router/auto-routes';
+import routes from './routes';
 import {
   createMemoryHistory,
   createRouter,
@@ -35,7 +35,9 @@ export default defineRouter((/* { store, ssrContext } */) => {
 
   // enable HMR for it
   if (import.meta.hot) {
-    handleHotUpdate(Router);
+    import.meta.hot.accept('./routes', () => {
+      // Hot reload routes if needed
+    });
   }
 
   return Router;

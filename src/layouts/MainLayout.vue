@@ -24,7 +24,10 @@
 
         <!-- User Info & Logout -->
         <div class="row items-center q-gutter-sm">
-          <div class="app-header__user-chip row items-center q-px-sm q-py-xs" style="border-radius: 20px">
+          <div
+            class="app-header__user-chip row items-center q-px-sm q-py-xs"
+            style="border-radius: 20px"
+          >
             <q-icon name="account_circle" size="18px" class="q-mr-xs" />
             <span>{{ authStore.currentUser?.name || 'ผู้ใช้งาน' }}</span>
             <q-badge
@@ -60,7 +63,7 @@
         </div>
         <div>
           <div class="sidebar-brand__text">KI Stock</div>
-          <div class="sidebar-brand__sub">จัดการสต็อกอะไหล่</div>
+          <div class="sidebar-brand__sub">ติดตามสต็อก & ประวัติการสั่งซื้อ</div>
         </div>
       </div>
 
@@ -81,72 +84,20 @@
 
         <q-separator class="sidebar-divider" />
 
-        <!-- ── จัดการข้อมูล ── -->
-        <div class="sidebar-section-label">จัดการข้อมูล</div>
+        <!-- ── ติดตามสต็อก ── -->
+        <div class="sidebar-section-label">ติดตามสต็อก (Stock Tracking)</div>
 
         <q-item
           clickable
           v-ripple
           to="/products/"
-          :class="['sidebar-item', (isActive('/products') || isActive('/products/')) && 'sidebar-item--active']"
+          :class="[
+            'sidebar-item',
+            (isActive('/products') || isActive('/products/')) && 'sidebar-item--active',
+          ]"
         >
           <q-item-section avatar><q-icon name="inventory_2" /></q-item-section>
-          <q-item-section><q-item-label>รายการอะไหล่</q-item-label></q-item-section>
-        </q-item>
-
-        <q-item
-          clickable
-          v-ripple
-          to="/vehicles/compatibility"
-          :class="['sidebar-item', isActive('/vehicles/compatibility') && 'sidebar-item--active']"
-        >
-          <q-item-section avatar><q-icon name="link" /></q-item-section>
-          <q-item-section><q-item-label>ความเข้ากันได้ของรุ่นรถ</q-item-label></q-item-section>
-        </q-item>
-
-        <q-separator class="sidebar-divider" />
-
-        <!-- ── สต็อกสินค้า ── -->
-        <div class="sidebar-section-label">สต็อกสินค้า</div>
-
-        <q-item
-          clickable
-          v-ripple
-          to="/stock/in"
-          :class="['sidebar-item', isActive('/stock/in') && 'sidebar-item--active']"
-        >
-          <q-item-section avatar><q-icon name="input" /></q-item-section>
-          <q-item-section><q-item-label>รับสินค้าเข้า</q-item-label></q-item-section>
-        </q-item>
-
-        <q-item
-          clickable
-          v-ripple
-          to="/stock/out"
-          :class="['sidebar-item', isActive('/stock/out') && 'sidebar-item--active']"
-        >
-          <q-item-section avatar><q-icon name="output" /></q-item-section>
-          <q-item-section><q-item-label>จ่ายสินค้าออก</q-item-label></q-item-section>
-        </q-item>
-
-        <q-item
-          clickable
-          v-ripple
-          to="/stock/adjust"
-          :class="['sidebar-item', isActive('/stock/adjust') && 'sidebar-item--active']"
-        >
-          <q-item-section avatar><q-icon name="edit_note" /></q-item-section>
-          <q-item-section><q-item-label>ปรับปรุงสต็อก</q-item-label></q-item-section>
-        </q-item>
-
-        <q-item
-          clickable
-          v-ripple
-          to="/stock/alerts"
-          :class="['sidebar-item', isActive('/stock/alerts') && 'sidebar-item--active']"
-        >
-          <q-item-section avatar><q-icon name="warning" color="warning" /></q-item-section>
-          <q-item-section><q-item-label>แจ้งเตือนสต็อกต่ำ</q-item-label></q-item-section>
+          <q-item-section><q-item-label>สินค้า & สต็อกคงเหลือ</q-item-label></q-item-section>
         </q-item>
 
         <q-item
@@ -159,55 +110,33 @@
           <q-item-section><q-item-label>ประวัติการเคลื่อนไหว</q-item-label></q-item-section>
         </q-item>
 
-        <q-separator class="sidebar-divider" />
-
-        <!-- ── จัดซื้อ ── -->
-        <div class="sidebar-section-label">จัดซื้อ</div>
-
         <q-item
           clickable
           v-ripple
-          to="/suppliers/"
-          :class="['sidebar-item', (isActive('/suppliers') || isActive('/suppliers/')) && 'sidebar-item--active']"
+          to="/stock/alerts"
+          :class="['sidebar-item', isActive('/stock/alerts') && 'sidebar-item--active']"
         >
-          <q-item-section avatar><q-icon name="store" /></q-item-section>
-          <q-item-section><q-item-label>ผู้จำหน่าย</q-item-label></q-item-section>
+          <q-item-section avatar><q-icon name="warning" color="warning" /></q-item-section>
+          <q-item-section><q-item-label>แจ้งเตือนสต็อกต่ำ</q-item-label></q-item-section>
         </q-item>
+
+        <q-separator class="sidebar-divider" />
+
+        <!-- ── ประวัติการสั่งซื้อ ── -->
+        <div class="sidebar-section-label">ประวัติการสั่งซื้อ (Purchase Orders)</div>
 
         <q-item
           clickable
           v-ripple
           to="/purchase-orders/"
-          :class="['sidebar-item', (isActive('/purchase-orders') || isActive('/purchase-orders/')) && 'sidebar-item--active']"
+          :class="[
+            'sidebar-item',
+            (isActive('/purchase-orders') || isActive('/purchase-orders/')) &&
+              'sidebar-item--active',
+          ]"
         >
           <q-item-section avatar><q-icon name="receipt_long" /></q-item-section>
-          <q-item-section><q-item-label>ใบสั่งซื้อ (PO)</q-item-label></q-item-section>
-        </q-item>
-
-        <q-separator class="sidebar-divider" />
-
-        <!-- ── รายงาน & ระบบ ── -->
-        <div class="sidebar-section-label">รายงาน & ระบบ</div>
-
-        <q-item
-          clickable
-          v-ripple
-          to="/reports/"
-          :class="['sidebar-item', (isActive('/reports') || isActive('/reports/')) && 'sidebar-item--active']"
-        >
-          <q-item-section avatar><q-icon name="assessment" /></q-item-section>
-          <q-item-section><q-item-label>รายงาน</q-item-label></q-item-section>
-        </q-item>
-
-        <q-item
-          v-if="authStore.isAdmin"
-          clickable
-          v-ripple
-          to="/users/"
-          :class="['sidebar-item', (isActive('/users') || isActive('/users/')) && 'sidebar-item--active']"
-        >
-          <q-item-section avatar><q-icon name="people" /></q-item-section>
-          <q-item-section><q-item-label>ผู้ใช้งานระบบ</q-item-label></q-item-section>
+          <q-item-section><q-item-label>ประวัติใบสั่งซื้อ (PO)</q-item-label></q-item-section>
         </q-item>
       </q-list>
     </q-drawer>
@@ -216,7 +145,7 @@
     <!-- Page Container                               -->
     <!-- ============================================ -->
     <q-page-container class="app-page-content">
-      <slot />
+      <router-view />
     </q-page-container>
   </q-layout>
 </template>
