@@ -1,0 +1,548 @@
+<template>
+  <q-page class="q-pa-xs-sm q-pa-md">
+    <BasePageHeader
+      title="ประวัติใบสั่งซื้อสินค้า (Purchase Orders)"
+      subtitle="ตรวจสอบประวัติการสั่งซื้อ รายการสินค้าที่สั่ง และติดตามสถานะ PO"
+    >
+      <template #actions>
+        <q-btn
+          color="primary"
+          icon="add_shopping_cart"
+          label="สร้างใบสั่งซื้อ (PO) ใหม่"
+          class="full-width-xs text-weight-bold"
+          unelevated
+          @click="openCreateModal"
+        />
+      </template>
+    </BasePageHeader>
+
+    <!-- Table of Purchase Orders -->
+    <BaseTable title="รายการใบสั่งซื้อย้อนหลัง" :rows="purchaseOrders" :columns="columns">
+      <template #body-cell-itemsCount="props">
+        <q-td :props="props">
+          <q-chip color="blue-1" text-color="blue-9" size="sm" class="q-px-xs text-weight-bold">
+            <q-icon name="list_alt" size="14px" class="q-mr-xs" />
+            {{ props.row.items?.length || 0 }} รายการ
+          </q-chip>
+        </q-td>
+      </template>
+
+      <template #body-cell-totalAmount="props">
+        <q-td :props="props" class="text-weight-bold text-primary">
+          ฿{{ Number(props.row.totalAmount || 0).toLocaleString() }}
+        </q-td>
+      </template>
+
+      <template #body-cell-status="props">
+        <q-td :props="props">
+          <q-select
+            :model-value="props.row.status"
+            :options="statusOptions"
+            emit-value
+            map-options
+            dense
+            borderless
+            class="status-select"
+            @update:model-value="(val) => handleStatusChange(props.row.id, val)"
+          >
+            <template #selected>
+              <q-chip
+                :color="getStatusColor(props.row.status)"
+                text-color="white"
+                size="sm"
+                class="q-ma-none cursor-pointer"
+              >
+                {{ getStatusLabel(props.row.status) }}
+                <q-icon name="arrow_drop_down" class="q-ml-xs" />
+              </q-chip>
+            </template>
+          </q-select>
+        </q-td>
+      </template>
+
+      <template #body-cell-actions="props">
+        <q-td :props="props" align="right">
+          <q-btn
+            flat
+            round
+            dense
+            color="primary"
+            icon="visibility"
+            @click="viewPoDetail(props.row)"
+          >
+            <q-tooltip>ดูรายการสินค้าที่สั่งไว้ในใบนี้</q-tooltip>
+          </q-btn>
+        </q-td>
+      </template>
+    </BaseTable>
+
+    <!-- Create PO Modal with Dynamic Items List -->
+    <q-dialog v-model="isCreateModalOpen" persistent>
+      <q-card style="width: 800px; max-width: 95vw; border-radius: var(--radius-lg)">
+        <q-card-section class="row items-center justify-between q-pb-none">
+          <div class="text-h6 text-weight-bold text-primary row items-center">
+            <q-icon name="add_shopping_cart" class="q-mr-xs" />
+            สร้างใบสั่งซื้อสินค้า (PO) ใหม่
+          </div>
+          <q-btn flat round dense icon="close" v-close-popup />
+        </q-card-section>
+
+        <q-card-section class="q-gutter-md q-pt-md">
+          <div class="row q-col-gutter-sm">
+            <div class="col-12 col-sm-6">
+              <q-input
+                v-model="form.poNumber"
+                outlined
+                dense
+                label="เลขที่ใบสั่งซื้อ (PO Number)"
+                readonly
+                hint="ระบบรันเลขให้อัตโนมัติ"
+              />
+            </div>
+            <div class="col-12 col-sm-6">
+              <q-select
+                v-model="form.supplierName"
+                outlined
+                dense
+                :options="suppliers.map((s) => s.name)"
+                label="เลือกผู้จำหน่าย / ซัพพลายเออร์"
+              />
+            </div>
+          </div>
+
+          <!-- Item Selection Section -->
+          <div class="text-subtitle2 text-weight-bold q-mt-md row items-center justify-between">
+            <span
+              ><q-icon
+                name="format_list_bulleted"
+                color="primary"
+                class="q-mr-xs"
+              />รายการสินค้าที่จะสั่งซื้อ</span
+            >
+            <q-btn
+              flat
+              dense
+              color="primary"
+              icon="add"
+              label="เพิ่มรายการสินค้า"
+              no-caps
+              size="sm"
+              @click="addItemRow"
+            />
+          </div>
+
+          <q-card flat bordered class="q-pa-sm" style="background: var(--color-bg-surface)">
+            <div
+              v-for="(item, index) in formItems"
+              :key="index"
+              class="row q-col-gutter-xs items-center q-mb-sm"
+            >
+              <!-- Select Product -->
+              <div class="col-12 col-sm-5">
+                <q-select
+                  v-model="item.selectedProduct"
+                  outlined
+                  dense
+                  :options="productOptions"
+                  label="เลือกสินค้า / อะไหล่"
+                  @update:model-value="(prod) => handleProductSelect(index, prod)"
+                />
+              </div>
+
+              <!-- Quantity -->
+              <div class="col-5 col-sm-2">
+                <q-input
+                  v-model.number="item.quantity"
+                  type="number"
+                  outlined
+                  dense
+                  label="จำนวน"
+                  min="1"
+                  @update:model-value="calcItemTotal(index)"
+                />
+              </div>
+
+              <!-- Unit Price -->
+              <div class="col-5 col-sm-2">
+                <q-input
+                  v-model.number="item.unitPrice"
+                  type="number"
+                  outlined
+                  dense
+                  label="ราคา/หน่วย"
+                  min="0"
+                  @update:model-value="calcItemTotal(index)"
+                />
+              </div>
+
+              <!-- Subtotal -->
+              <div class="col-10 col-sm-2 text-right text-weight-bold text-primary">
+                ฿{{ item.totalPrice.toLocaleString() }}
+              </div>
+
+              <!-- Delete row -->
+              <div class="col-2 col-sm-1 text-center">
+                <q-btn
+                  flat
+                  round
+                  dense
+                  color="negative"
+                  icon="delete_outline"
+                  size="sm"
+                  :disable="formItems.length <= 1"
+                  @click="removeItemRow(index)"
+                />
+              </div>
+            </div>
+
+            <!-- Total Bar inside Create Form -->
+            <div class="row justify-between items-center q-pt-sm q-px-sm border-top">
+              <span class="text-caption text-grey-7">รวมทั้งหมด {{ formItems.length }} รายการ</span>
+              <div class="text-subtitle1 text-weight-bold text-primary">
+                ยอดรวมทั้งสิ้น: ฿{{ calculatedGrandTotal.toLocaleString() }}
+              </div>
+            </div>
+          </q-card>
+
+          <q-input
+            v-model="form.note"
+            outlined
+            dense
+            type="textarea"
+            rows="2"
+            label="หมายเหตุเพิ่มเติม (ถ้ามี)"
+          />
+        </q-card-section>
+
+        <q-card-actions align="right" class="q-pa-md bg-grey-1">
+          <q-btn flat label="ยกเลิก" v-close-popup color="grey-7" no-caps />
+          <q-btn
+            color="primary"
+            label="บันทึกใบสั่งซื้อ"
+            unelevated
+            no-caps
+            class="text-weight-bold"
+            :disable="!form.supplierName || formItems.length === 0"
+            @click="savePO"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <!-- Detail View Modal -->
+    <q-dialog v-model="isDetailModalOpen">
+      <q-card
+        style="width: 720px; max-width: 95vw; border-radius: var(--radius-lg)"
+        v-if="selectedPO"
+      >
+        <q-card-section class="row items-center justify-between bg-primary text-white">
+          <div>
+            <div class="text-h6 text-weight-bold row items-center">
+              <q-icon name="receipt" class="q-mr-xs" />
+              ใบสั่งซื้อเลขที่: {{ selectedPO.poNumber }}
+            </div>
+            <div class="text-caption">วันที่สั่งซื้อ: {{ selectedPO.createdAt }}</div>
+          </div>
+          <q-btn flat round dense icon="close" v-close-popup color="white" />
+        </q-card-section>
+
+        <q-card-section class="q-pa-md">
+          <!-- Header Info Card -->
+          <div class="row q-col-gutter-md q-mb-md">
+            <div class="col-12 col-sm-6">
+              <div class="text-caption text-grey-7">ผู้จำหน่าย (Supplier)</div>
+              <div class="text-subtitle2 text-weight-bold">{{ selectedPO.supplierName }}</div>
+            </div>
+            <div class="col-12 col-sm-6 text-right-sm">
+              <div class="text-caption text-grey-7">สถานะสั่งซื้อ</div>
+              <q-chip
+                :color="getStatusColor(selectedPO.status)"
+                text-color="white"
+                size="sm"
+                class="text-weight-bold q-ma-none"
+              >
+                {{ getStatusLabel(selectedPO.status) }}
+              </q-chip>
+            </div>
+          </div>
+
+          <q-separator class="q-my-sm" />
+
+          <!-- Ordered Items Table -->
+          <div class="text-subtitle2 text-weight-bold q-mb-sm row items-center">
+            <q-icon name="inventory_2" color="primary" class="q-mr-xs" />
+            รายการสินค้าที่สั่งซื้อไว้ทั้งหมด ({{ selectedPO.items?.length || 0 }} รายการ)
+          </div>
+
+          <q-markup-table flat bordered dense class="q-mb-md">
+            <thead>
+              <tr class="bg-grey-2 text-left">
+                <th>#</th>
+                <th>รหัสสินค้า</th>
+                <th>รายการอะไหล่ / สินค้า</th>
+                <th class="text-center">จำนวนที่สั่ง</th>
+                <th class="text-right">ราคา/หน่วย</th>
+                <th class="text-right">ราคารวม (฿)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(item, idx) in selectedPO.items" :key="item.id || idx">
+                <td>{{ idx + 1 }}</td>
+                <td class="text-grey-8" style="font-family: monospace">
+                  {{ item.partNumber || '-' }}
+                </td>
+                <td class="text-weight-medium">{{ item.productName }}</td>
+                <td class="text-center text-weight-bold">{{ item.quantity }}</td>
+                <td class="text-right">฿{{ Number(item.unitPrice).toLocaleString() }}</td>
+                <td class="text-right text-weight-bold text-primary">
+                  ฿{{ Number(item.totalPrice).toLocaleString() }}
+                </td>
+              </tr>
+              <tr v-if="!selectedPO.items || selectedPO.items.length === 0">
+                <td colspan="6" class="text-center text-grey-6 q-pa-md">
+                  ไม่มีรายละเอียดรายการสินค้า
+                </td>
+              </tr>
+            </tbody>
+          </q-markup-table>
+
+          <!-- Grand Total Summary -->
+          <div class="row justify-between items-center q-pa-md bg-blue-1 rounded-borders">
+            <div class="text-caption text-grey-8">
+              <span v-if="selectedPO.note">📌 หมายเหตุ: {{ selectedPO.note }}</span>
+            </div>
+            <div class="text-subtitle1 text-weight-bold text-primary">
+              ยอดรวมสุทธิ: ฿{{ Number(selectedPO.totalAmount).toLocaleString() }}
+            </div>
+          </div>
+        </q-card-section>
+
+        <q-card-actions align="right" class="q-pa-md bg-grey-1">
+          <q-btn outline color="primary" label="ปิดหน้าต่าง" v-close-popup no-caps />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+  </q-page>
+</template>
+
+<script setup lang="ts">
+import { ref, reactive, computed } from 'vue';
+import BasePageHeader from '@/components/base/BasePageHeader.vue';
+import BaseTable from '@/components/base/BaseTable.vue';
+import { useSuppliers, type PurchaseOrder, type POItem } from '@/composables/use-suppliers';
+import { useProducts, type Product } from '@/composables/use-products';
+
+const { purchaseOrders, suppliers, addPO, updatePOStatus } = useSuppliers();
+const { products } = useProducts();
+
+const statusOptions = [
+  { label: 'รับสินค้าแล้ว', value: 'RECEIVED' },
+  { label: 'รอสินค้า (Ordered)', value: 'ORDERED' },
+  { label: 'ฉบับร่าง', value: 'DRAFT' },
+  { label: 'ยกเลิก', value: 'CANCELLED' },
+];
+
+const columns = [
+  {
+    name: 'poNumber',
+    label: 'เลขที่ PO',
+    field: 'poNumber',
+    align: 'left' as const,
+    sortable: true,
+  },
+  { name: 'supplierName', label: 'ผู้จำหน่าย', field: 'supplierName', align: 'left' as const },
+  {
+    name: 'itemsCount',
+    label: 'จำนวนรายการที่สั่ง',
+    field: 'itemsCount',
+    align: 'center' as const,
+  },
+  {
+    name: 'totalAmount',
+    label: 'ยอดรวม (฿)',
+    field: 'totalAmount',
+    align: 'left' as const,
+    sortable: true,
+  },
+  { name: 'status', label: 'สถานะ PO', field: 'status', align: 'center' as const },
+  { name: 'createdAt', label: 'วันที่สั่งซื้อ', field: 'createdAt', align: 'left' as const },
+  { name: 'actions', label: 'ดูรายการสินค้า', field: 'actions', align: 'right' as const },
+];
+
+// Product options for creation form select
+const productOptions = computed(() =>
+  products.value.map((p: Product) => ({
+    label: `${p.name} (${p.partNumber})`,
+    value: p.id,
+    partNumber: p.partNumber,
+    name: p.name,
+    costPrice: p.costPrice,
+  })),
+);
+
+interface FormItemRow {
+  selectedProduct: {
+    label: string;
+    value: number;
+    partNumber: string;
+    name: string;
+    costPrice: number;
+  } | null;
+  partNumber: string;
+  productName: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+}
+
+const isCreateModalOpen = ref(false);
+const isDetailModalOpen = ref(false);
+const selectedPO = ref<PurchaseOrder | null>(null);
+
+const formItems = ref<FormItemRow[]>([]);
+const form = reactive({
+  poNumber: '',
+  supplierName: '',
+  note: '',
+});
+
+function generateNextPONumber(): string {
+  const year = new Date().getFullYear();
+  const nextSeq = String(purchaseOrders.value.length + 1).padStart(3, '0');
+  return `PO-${year}-${nextSeq}`;
+}
+
+function openCreateModal(): void {
+  form.poNumber = generateNextPONumber();
+  form.supplierName = suppliers.value[0]?.name || '';
+  form.note = '';
+  formItems.value = [
+    {
+      selectedProduct: null,
+      partNumber: '',
+      productName: '',
+      quantity: 1,
+      unitPrice: 0,
+      totalPrice: 0,
+    },
+  ];
+  isCreateModalOpen.value = true;
+}
+
+function addItemRow(): void {
+  formItems.value.push({
+    selectedProduct: null,
+    partNumber: '',
+    productName: '',
+    quantity: 1,
+    unitPrice: 0,
+    totalPrice: 0,
+  });
+}
+
+function removeItemRow(index: number): void {
+  formItems.value.splice(index, 1);
+}
+
+function handleProductSelect(
+  index: number,
+  prodOpt: {
+    label: string;
+    value: number;
+    partNumber: string;
+    name: string;
+    costPrice: number;
+  } | null,
+): void {
+  if (prodOpt && formItems.value[index]) {
+    formItems.value[index].partNumber = prodOpt.partNumber;
+    formItems.value[index].productName = prodOpt.name;
+    formItems.value[index].unitPrice = prodOpt.costPrice;
+    calcItemTotal(index);
+  }
+}
+
+function calcItemTotal(index: number): void {
+  const item = formItems.value[index];
+  if (item) {
+    item.totalPrice = (item.quantity || 0) * (item.unitPrice || 0);
+  }
+}
+
+const calculatedGrandTotal = computed(() =>
+  formItems.value.reduce((sum, item) => sum + (item.totalPrice || 0), 0),
+);
+
+function savePO(): void {
+  const poItems: POItem[] = formItems.value.map((item, idx) => ({
+    id: Date.now() + idx,
+    partNumber: item.partNumber || '-',
+    productName: item.productName || 'สินค้าสั่งซื้อ',
+    quantity: item.quantity || 1,
+    unitPrice: item.unitPrice || 0,
+    totalPrice: item.totalPrice || 0,
+  }));
+
+  addPO({
+    poNumber: form.poNumber,
+    supplierName: form.supplierName,
+    items: poItems,
+    totalAmount: calculatedGrandTotal.value,
+    status: 'ORDERED',
+    note: form.note,
+  });
+
+  isCreateModalOpen.value = false;
+}
+
+function viewPoDetail(po: PurchaseOrder): void {
+  selectedPO.value = po;
+  isDetailModalOpen.value = true;
+}
+
+function handleStatusChange(id: number, newStatus: PurchaseOrder['status']): void {
+  updatePOStatus(id, newStatus);
+}
+
+function getStatusColor(status: PurchaseOrder['status']): string {
+  switch (status) {
+    case 'RECEIVED':
+      return 'positive';
+    case 'ORDERED':
+      return 'warning';
+    case 'DRAFT':
+      return 'grey-7';
+    case 'CANCELLED':
+      return 'negative';
+    default:
+      return 'grey';
+  }
+}
+
+function getStatusLabel(status: PurchaseOrder['status']): string {
+  switch (status) {
+    case 'RECEIVED':
+      return 'รับสินค้าแล้ว';
+    case 'ORDERED':
+      return 'รอสินค้า';
+    case 'DRAFT':
+      return 'ฉบับร่าง';
+    case 'CANCELLED':
+      return 'ยกเลิก';
+    default:
+      return 'ไม่ทราบสถานะ';
+  }
+}
+</script>
+
+<style scoped>
+.status-select {
+  display: inline-block;
+}
+
+@media (max-width: 599px) {
+  .full-width-xs {
+    width: 100%;
+  }
+}
+</style>
