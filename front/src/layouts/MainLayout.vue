@@ -4,13 +4,13 @@
     <!-- Header: White minimal bar                    -->
     <!-- ============================================ -->
     <q-header class="app-header" :elevated="false">
-      <q-toolbar style="min-height: 52px">
+      <q-toolbar class="app-header__toolbar">
         <q-btn
           flat
           dense
           round
           icon="menu"
-          aria-label="Menu"
+          aria-label="เปิดเมนูนำทาง"
           class="app-header__icon"
           @click="toggleLeftDrawer"
         />
@@ -26,7 +26,6 @@
         <div class="row items-center q-gutter-sm">
           <div
             class="app-header__user-chip row items-center q-px-sm q-py-xs"
-            style="border-radius: 20px"
           >
             <q-icon name="account_circle" size="18px" class="q-mr-xs" />
             <span>{{ authStore.currentUser?.name || 'ผู้ใช้งาน' }}</span>
@@ -34,11 +33,18 @@
               :label="authStore.roleLabel"
               color="primary"
               text-color="white"
-              class="q-ml-xs"
-              style="font-size: 0.65rem; padding: 2px 6px"
+              class="q-ml-xs app-header__role-badge"
             />
           </div>
-          <q-btn flat round icon="logout" size="sm" color="grey-6" @click="handleLogout">
+          <q-btn
+            flat
+            round
+            icon="logout"
+            size="sm"
+            class="app-header__logout"
+            aria-label="ออกจากระบบ"
+            @click="handleLogout"
+          >
             <q-tooltip>ออกจากระบบ</q-tooltip>
           </q-btn>
         </div>
@@ -67,7 +73,7 @@
         </div>
       </div>
 
-      <q-list padding>
+      <q-list padding aria-label="เมนูหลัก">
         <!-- ── ภาพรวม ── -->
         <div class="sidebar-section-label">ภาพรวม</div>
 
@@ -76,7 +82,9 @@
           v-ripple
           to="/"
           exact
+          :aria-current="isActive('/') ? 'page' : undefined"
           :class="['sidebar-item', isActive('/') && 'sidebar-item--active']"
+          @click="closeDrawerOnMobile"
         >
           <q-item-section avatar><q-icon name="dashboard" /></q-item-section>
           <q-item-section><q-item-label>แดชบอร์ด</q-item-label></q-item-section>
@@ -91,10 +99,12 @@
           clickable
           v-ripple
           to="/products/"
+          :aria-current="isActive('/products') || isActive('/products/') ? 'page' : undefined"
           :class="[
             'sidebar-item',
             (isActive('/products') || isActive('/products/')) && 'sidebar-item--active',
           ]"
+          @click="closeDrawerOnMobile"
         >
           <q-item-section avatar><q-icon name="inventory_2" /></q-item-section>
           <q-item-section><q-item-label>สินค้า & สต็อกคงเหลือ</q-item-label></q-item-section>
@@ -104,7 +114,9 @@
           clickable
           v-ripple
           to="/stock/movements"
+          :aria-current="isActive('/stock/movements') ? 'page' : undefined"
           :class="['sidebar-item', isActive('/stock/movements') && 'sidebar-item--active']"
+          @click="closeDrawerOnMobile"
         >
           <q-item-section avatar><q-icon name="history" /></q-item-section>
           <q-item-section><q-item-label>ประวัติการเคลื่อนไหว</q-item-label></q-item-section>
@@ -114,7 +126,9 @@
           clickable
           v-ripple
           to="/stock/alerts"
+          :aria-current="isActive('/stock/alerts') ? 'page' : undefined"
           :class="['sidebar-item', isActive('/stock/alerts') && 'sidebar-item--active']"
+          @click="closeDrawerOnMobile"
         >
           <q-item-section avatar><q-icon name="warning" color="warning" /></q-item-section>
           <q-item-section><q-item-label>แจ้งเตือนสต็อกต่ำ</q-item-label></q-item-section>
@@ -129,11 +143,13 @@
           clickable
           v-ripple
           to="/purchase-orders/"
+          :aria-current="isActive('/purchase-orders') || isActive('/purchase-orders/') ? 'page' : undefined"
           :class="[
             'sidebar-item',
             (isActive('/purchase-orders') || isActive('/purchase-orders/')) &&
               'sidebar-item--active',
           ]"
+          @click="closeDrawerOnMobile"
         >
           <q-item-section avatar><q-icon name="receipt_long" /></q-item-section>
           <q-item-section><q-item-label>ประวัติใบสั่งซื้อ (PO)</q-item-label></q-item-section>
@@ -152,9 +168,11 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useQuasar } from 'quasar';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '@/stores/auth.store';
 
+const $q = useQuasar();
 const leftDrawerOpen = ref(false);
 const authStore = useAuthStore();
 const router = useRouter();
@@ -162,6 +180,10 @@ const route = useRoute();
 
 function toggleLeftDrawer(): void {
   leftDrawerOpen.value = !leftDrawerOpen.value;
+}
+
+function closeDrawerOnMobile(): void {
+  if ($q.screen.lt.md) leftDrawerOpen.value = false;
 }
 
 function handleLogout(): void {

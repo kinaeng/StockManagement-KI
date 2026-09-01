@@ -4,7 +4,9 @@
       <q-card-section class="row items-center bg-primary text-white">
         <div class="text-h6 text-weight-bold">{{ title }}</div>
         <q-space />
-        <q-btn v-close-popup icon="close" flat round dense />
+        <q-btn v-close-popup icon="close" flat round dense>
+          <q-tooltip>ปิด</q-tooltip>
+        </q-btn>
       </q-card-section>
 
       <q-card-section class="q-pa-md">
@@ -12,7 +14,7 @@
       </q-card-section>
 
       <q-card-actions align="right" class="bg-grey-2">
-        <q-btn flat label="ยกเลิก" color="negative" v-close-popup />
+        <q-btn outline label="ยกเลิก" color="primary" v-close-popup />
         <q-btn
           v-if="showConfirm"
           :label="confirmLabel"

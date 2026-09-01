@@ -1,0 +1,80 @@
+[
+  {
+    "resourceName": "Users",
+    "resourcePath": "/admin/users",
+    "createBody": "{\"username\":\"postman_user_{{$timestamp}}\",\"email\":\"postman_user_{{$timestamp}}@example.com\",\"passwordHash\":\"plain-or-hash-for-api-test\",\"fullName\":\"Postman Test User\",\"role\":\"STAFF\",\"status\":\"ACTIVE\"}",
+    "updateBody": "{\"fullName\":\"Postman Updated User\",\"status\":\"INACTIVE\"}"
+  },
+  {
+    "resourceName": "Categories",
+    "resourcePath": "/admin/categories",
+    "createBody": "{\"code\":\"CAT-{{$timestamp}}\",\"name\":\"Postman Category {{$timestamp}}\"}",
+    "updateBody": "{\"name\":\"Postman Category Updated\"}"
+  },
+  {
+    "resourceName": "Products",
+    "resourcePath": "/admin/products",
+    "createBody": "{\"sku\":\"SKU-{{$timestamp}}\",\"barcode\":\"BC-{{$timestamp}}\",\"name\":\"Postman Product\",\"description\":\"Created by Postman TDD collection\",\"unit\":\"pcs\",\"unitPrice\":120.5,\"minStock\":1,\"maxStock\":100,\"status\":\"ACTIVE\"}",
+    "updateBody": "{\"name\":\"Postman Product Updated\",\"unitPrice\":130}"
+  },
+  {
+    "resourceName": "Vehicles",
+    "resourcePath": "/admin/vehicles",
+    "createBody": "{\"brand\":\"Toyota\",\"model\":\"Vios\",\"yearStart\":2015,\"yearEnd\":2022,\"engineCode\":\"2NR\"}",
+    "updateBody": "{\"model\":\"Vios Updated\",\"yearEnd\":2024}"
+  },
+  {
+    "resourceName": "Product Vehicle Compatibilities",
+    "resourcePath": "/admin/product-vehicle-compatibilities",
+    "createBody": "{\"productId\":1,\"vehicleId\":1,\"notes\":\"Postman compatibility test\"}",
+    "updateBody": "{\"notes\":\"Postman compatibility updated\"}"
+  },
+  {
+    "resourceName": "Warehouses",
+    "resourcePath": "/admin/warehouses",
+    "createBody": "{\"code\":\"WH-{{$timestamp}}\",\"name\":\"Postman Warehouse\",\"locationDescription\":\"Test location\"}",
+    "updateBody": "{\"name\":\"Postman Warehouse Updated\"}"
+  },
+  {
+    "resourceName": "Warehouse Locations",
+    "resourcePath": "/admin/warehouse-locations",
+    "createBody": "{\"warehouseId\":1,\"zone\":\"A\",\"shelf\":\"S1\",\"bin\":\"B1\",\"locationCode\":\"LOC-{{$timestamp}}\"}",
+    "updateBody": "{\"zone\":\"B\",\"shelf\":\"S2\",\"bin\":\"B2\"}"
+  },
+  {
+    "resourceName": "Inventories",
+    "resourcePath": "/admin/inventories",
+    "createBody": "{\"productId\":1,\"warehouseId\":1,\"locationId\":1,\"quantity\":10,\"reservedQuantity\":0}",
+    "updateBody": "{\"quantity\":20,\"reservedQuantity\":2}"
+  },
+  {
+    "resourceName": "Suppliers",
+    "resourcePath": "/admin/suppliers",
+    "createBody": "{\"code\":\"SUP-{{$timestamp}}\",\"name\":\"Postman Supplier\",\"contactName\":\"Tester\",\"phone\":\"0812345678\",\"email\":\"supplier_{{$timestamp}}@example.com\",\"address\":\"Bangkok\",\"taxId\":\"TAX-{{$timestamp}}\"}",
+    "updateBody": "{\"name\":\"Postman Supplier Updated\",\"phone\":\"0899999999\"}"
+  },
+  {
+    "resourceName": "Purchase Orders",
+    "resourcePath": "/admin/purchase-orders",
+    "createBody": "{\"poNumber\":\"PO-{{$timestamp}}\",\"supplierId\":1,\"orderDate\":\"2026-08-31\",\"expectedDate\":\"2026-09-07\",\"status\":\"DRAFT\",\"createdByUserId\":1,\"items\":[{\"productId\":1,\"orderedQty\":5,\"receivedQty\":0,\"unitCost\":80}]}",
+    "updateBody": "{\"status\":\"ORDERED\"}"
+  },
+  {
+    "resourceName": "Stock Transactions",
+    "resourcePath": "/admin/stock-transactions",
+    "createBody": "{\"transactionNumber\":\"ST-{{$timestamp}}\",\"transactionType\":\"IN\",\"referenceType\":\"PO\",\"referenceId\":1,\"warehouseId\":1,\"createdByUserId\":1,\"transactionDate\":\"2026-08-31\",\"items\":[{\"productId\":1,\"locationId\":1,\"quantity\":5,\"unitCost\":80}]}",
+    "updateBody": "{\"transactionType\":\"ADJUST\"}"
+  },
+  {
+    "resourceName": "Stock Adjustments",
+    "resourcePath": "/admin/stock-adjustments",
+    "createBody": "{\"adjustmentNumber\":\"SA-{{$timestamp}}\",\"reason\":\"Postman adjustment test\",\"status\":\"PENDING\",\"createdByUserId\":1,\"items\":[{\"productId\":1,\"systemQty\":10,\"actualQty\":8}]}",
+    "updateBody": "{\"status\":\"APPROVED\",\"approvedByUserId\":1}"
+  },
+  {
+    "resourceName": "Stock Alerts",
+    "resourcePath": "/admin/stock-alerts",
+    "createBody": "{\"productId\":1,\"alertType\":\"LOW_STOCK\",\"currentQty\":2,\"thresholdQty\":5,\"status\":\"PENDING\"}",
+    "updateBody": "{\"status\":\"RESOLVED\"}"
+  }
+]

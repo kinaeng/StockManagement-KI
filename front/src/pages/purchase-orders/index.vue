@@ -16,6 +16,48 @@
       </template>
     </BasePageHeader>
 
+    <div class="row q-col-gutter-md q-mb-md">
+      <div class="col-12 col-sm-4">
+        <q-card flat class="stat-card">
+          <q-card-section class="row items-center justify-between">
+            <div>
+              <div class="stat-card__label">จำนวน PO ทั้งหมด</div>
+              <div class="stat-card__value">{{ totalPOCount }}</div>
+            </div>
+            <div class="stat-card__icon stat-card__icon--blue">
+              <q-icon name="receipt_long" size="24px" />
+            </div>
+          </q-card-section>
+        </q-card>
+      </div>
+      <div class="col-12 col-sm-4">
+        <q-card flat class="stat-card">
+          <q-card-section class="row items-center justify-between">
+            <div>
+              <div class="stat-card__label">รอสินค้า</div>
+              <div class="stat-card__value">{{ orderedPOCount }}</div>
+            </div>
+            <div class="stat-card__icon stat-card__icon--amber">
+              <q-icon name="schedule" size="24px" />
+            </div>
+          </q-card-section>
+        </q-card>
+      </div>
+      <div class="col-12 col-sm-4">
+        <q-card flat class="stat-card">
+          <q-card-section class="row items-center justify-between">
+            <div>
+              <div class="stat-card__label">รับแล้ว</div>
+              <div class="stat-card__value">{{ receivedPOCount }}</div>
+            </div>
+            <div class="stat-card__icon stat-card__icon--green">
+              <q-icon name="check_circle" size="24px" />
+            </div>
+          </q-card-section>
+        </q-card>
+      </div>
+    </div>
+
     <!-- Table of Purchase Orders -->
     <BaseTable title="รายการใบสั่งซื้อย้อนหลัง" :rows="purchaseOrders" :columns="columns">
       <template #body-cell-itemsCount="props">
@@ -78,16 +120,18 @@
 
     <!-- Create PO Modal with Dynamic Items List -->
     <q-dialog v-model="isCreateModalOpen" persistent>
-      <q-card style="width: 800px; max-width: 95vw; border-radius: var(--radius-lg)">
-        <q-card-section class="row items-center justify-between q-pb-none">
+      <q-card class="create-po-card">
+        <q-card-section class="create-po-card__header row items-center justify-between">
           <div class="text-h6 text-weight-bold text-primary row items-center">
             <q-icon name="add_shopping_cart" class="q-mr-xs" />
             สร้างใบสั่งซื้อสินค้า (PO) ใหม่
           </div>
-          <q-btn flat round dense icon="close" v-close-popup />
+          <q-btn flat round dense icon="close" v-close-popup>
+            <q-tooltip>ปิด</q-tooltip>
+          </q-btn>
         </q-card-section>
 
-        <q-card-section class="q-gutter-md q-pt-md">
+        <q-card-section class="create-po-card__body q-gutter-md">
           <div class="row q-col-gutter-sm">
             <div class="col-12 col-sm-6">
               <q-input
@@ -150,7 +194,7 @@
               </div>
 
               <!-- Quantity -->
-              <div class="col-5 col-sm-2">
+              <div class="col-12 col-sm-2">
                 <q-input
                   v-model.number="item.quantity"
                   type="number"
@@ -158,12 +202,13 @@
                   dense
                   label="จำนวน"
                   min="1"
-                  @update:model-value="calcItemTotal(index)"
+                  :rules="[(val) => Number(val) >= 1 || 'จำนวนต้องอย่างน้อย 1']"
+                  @update:model-value="normalizeQuantity(index)"
                 />
               </div>
 
               <!-- Unit Price -->
-              <div class="col-5 col-sm-2">
+              <div class="col-12 col-sm-2">
                 <q-input
                   v-model.number="item.unitPrice"
                   type="number"
@@ -176,12 +221,12 @@
               </div>
 
               <!-- Subtotal -->
-              <div class="col-10 col-sm-2 text-right text-weight-bold text-primary">
+              <div class="col-12 col-sm-2 text-left text-sm-right text-weight-bold text-primary">
                 ฿{{ item.totalPrice.toLocaleString() }}
               </div>
 
               <!-- Delete row -->
-              <div class="col-2 col-sm-1 text-center">
+              <div class="col-12 col-sm-1 text-left text-sm-center">
                 <q-btn
                   flat
                   round
@@ -191,9 +236,26 @@
                   size="sm"
                   :disable="formItems.length <= 1"
                   @click="removeItemRow(index)"
-                />
+                >
+                  <q-tooltip>{{
+                    formItems.length <= 1 ? 'ต้องมีอย่างน้อย 1 รายการ' : 'ลบ'
+                  }}</q-tooltip>
+                </q-btn>
               </div>
             </div>
+
+            <q-banner
+              v-if="duplicateProductNames.length > 0"
+              dense
+              rounded
+              class="bg-amber-1 text-amber-10 q-mt-sm"
+            >
+              <template #avatar>
+                <q-icon name="warning" color="warning" />
+              </template>
+              พบสินค้าซ้ำ:
+              {{ duplicateProductNames.join(', ') }} กรุณารวมจำนวนในแถวเดียวเพื่อลดความสับสน
+            </q-banner>
 
             <!-- Total Bar inside Create Form -->
             <div class="row justify-between items-center q-pt-sm q-px-sm border-top">
@@ -211,11 +273,13 @@
             type="textarea"
             rows="2"
             label="หมายเหตุเพิ่มเติม (ถ้ามี)"
+            counter
+            maxlength="250"
           />
         </q-card-section>
 
-        <q-card-actions align="right" class="q-pa-md bg-grey-1">
-          <q-btn flat label="ยกเลิก" v-close-popup color="grey-7" no-caps />
+        <q-card-actions align="right" class="create-po-card__footer q-pa-md bg-grey-1">
+          <q-btn outline label="ยกเลิก" v-close-popup color="primary" no-caps />
           <q-btn
             color="primary"
             label="บันทึกใบสั่งซื้อ"
@@ -243,7 +307,9 @@
             </div>
             <div class="text-caption">วันที่สั่งซื้อ: {{ selectedPO.createdAt }}</div>
           </div>
-          <q-btn flat round dense icon="close" v-close-popup color="white" />
+          <q-btn flat round dense icon="close" v-close-popup color="white">
+            <q-tooltip>ปิด</q-tooltip>
+          </q-btn>
         </q-card-section>
 
         <q-card-section class="q-pa-md">
@@ -441,6 +507,7 @@ function addItemRow(): void {
 }
 
 function removeItemRow(index: number): void {
+  if (formItems.value.length <= 1) return;
   formItems.value.splice(index, 1);
 }
 
@@ -469,8 +536,43 @@ function calcItemTotal(index: number): void {
   }
 }
 
+function normalizeQuantity(index: number): void {
+  const item = formItems.value[index];
+  if (!item) return;
+  if (!item.quantity || item.quantity < 1) {
+    item.quantity = 1;
+  }
+  calcItemTotal(index);
+}
+
 const calculatedGrandTotal = computed(() =>
   formItems.value.reduce((sum, item) => sum + (item.totalPrice || 0), 0),
+);
+
+const duplicateProductNames = computed(() => {
+  const seen = new Map<number, string>();
+  const duplicates = new Set<string>();
+
+  formItems.value.forEach((item) => {
+    const productId = item.selectedProduct?.value;
+    if (!productId) return;
+
+    if (seen.has(productId)) {
+      duplicates.add(item.productName || seen.get(productId) || 'สินค้าที่เลือก');
+    } else {
+      seen.set(productId, item.productName);
+    }
+  });
+
+  return [...duplicates];
+});
+
+const totalPOCount = computed((): number => purchaseOrders.value.length);
+const orderedPOCount = computed(
+  (): number => purchaseOrders.value.filter((po) => po.status === 'ORDERED').length,
+);
+const receivedPOCount = computed(
+  (): number => purchaseOrders.value.filter((po) => po.status === 'RECEIVED').length,
 );
 
 function savePO(): void {
@@ -538,6 +640,39 @@ function getStatusLabel(status: PurchaseOrder['status']): string {
 <style scoped>
 .status-select {
   display: inline-block;
+}
+
+.create-po-card {
+  width: 800px;
+  max-width: 95vw;
+  max-height: 90vh;
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+}
+
+.create-po-card__header,
+.create-po-card__footer {
+  flex: 0 0 auto;
+  position: sticky;
+  z-index: 1;
+}
+
+.create-po-card__header {
+  top: 0;
+  background: #fff;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.create-po-card__body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.create-po-card__footer {
+  bottom: 0;
+  border-top: 1px solid var(--color-border);
 }
 
 @media (max-width: 599px) {

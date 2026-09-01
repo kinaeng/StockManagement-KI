@@ -22,7 +22,22 @@
 
   --color-text-main: #0f172a;
   --color-text-body: #334155;
-  --color-text-muted: #64748b;
+  --color-text-muted: #475569;
+
+  // Semantic colors
+  --color-success: #16a34a;
+  --color-success-subtle: #f0fdf4;
+  --color-warning: #b45309;
+  --color-warning-subtle: #fffbeb;
+  --color-danger: #dc2626;
+  --color-danger-subtle: #fef2f2;
+  --color-info: #2563eb;
+  --color-info-subtle: #eff6ff;
+
+  // Interaction
+  --focus-ring: 0 0 0 3px rgba(37, 99, 235, 0.24);
+  --duration-fast: 120ms;
+  --duration-normal: 180ms;
 
   // Typography Scale
   --font-size-xs: 0.75rem;     // 12px
@@ -63,6 +78,7 @@
   --radius-sm: 6px;
   --radius-md: 8px;
   --radius-lg: 12px;
+  --radius-pill: 9999px;
 }
 
 // ========================================
@@ -190,6 +206,10 @@ body {
   border-bottom: 1px solid var(--color-border);
   color: var(--color-text-main);
 
+  .app-header__toolbar {
+    min-height: 52px;
+  }
+
   .app-header__title {
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-bold);
@@ -208,6 +228,17 @@ body {
     font-weight: var(--font-weight-medium);
     font-size: var(--font-size-sm);
     border: 1px solid rgba(37, 99, 235, 0.15);
+    border-radius: var(--radius-pill);
+    white-space: nowrap;
+  }
+
+  .app-header__logout {
+    color: var(--color-text-muted);
+  }
+
+  .app-header__role-badge {
+    font-size: var(--font-size-xs);
+    padding: 2px 6px;
   }
 }
 
@@ -264,7 +295,7 @@ body {
     border-radius: var(--radius-sm);
     min-height: 40px;
     padding: 0 12px;
-    transition: all 0.15s ease;
+    transition: background-color var(--duration-fast) ease, color var(--duration-fast) ease, border-color var(--duration-fast) ease;
 
     .q-item__section--avatar {
       min-width: 32px;
@@ -448,6 +479,49 @@ body {
 .q-input, .q-select {
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-normal);
+}
+
+// Keyboard accessibility: keep focus visible without affecting mouse users
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.q-btn:focus-visible,
+.q-item:focus-visible,
+.q-field--focused .q-field__control {
+  box-shadow: var(--focus-ring);
+}
+
+// Avoid motion for users who explicitly request reduced motion
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+// Responsive header
+@media (max-width: 640px) {
+  .app-header {
+    .app-header__title {
+      font-size: var(--font-size-base);
+    }
+
+    .app-header__user-chip {
+      padding-left: 8px;
+      padding-right: 8px;
+
+      > span,
+      .q-badge {
+        display: none;
+      }
+    }
+  }
 }
 
 // Improved Thai font rendering for specific elements

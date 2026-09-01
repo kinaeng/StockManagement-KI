@@ -23,6 +23,10 @@ export class AdminUsersService {
     });
   }
 
+  async findByUsername(username: string): Promise<User | null> {
+    return await this.userRepository.findOne({ where: { username } });
+  }
+
   async findOne(id: number): Promise<User> {
     const user = await this.userRepository.findOne({ where: { id } });
     if (!user) {

@@ -14,7 +14,6 @@
             background: var(--color-bg-main);
           "
         >
-          <!-- Brand Header -->
           <q-card-section class="text-center q-pb-sm">
             <div
               class="q-mx-auto q-mb-md"
@@ -38,13 +37,15 @@
             </div>
           </q-card-section>
 
-          <!-- Login Form -->
-          <q-card-section class="q-gutter-md q-pt-md">
+          <q-form class="q-card__section q-gutter-md q-pt-md" @submit.prevent="handleLogin">
             <q-input
-              v-model="email"
+              v-model="identifier"
               outlined
               label="อีเมล / Username"
               dense
+              autocomplete="username"
+              :disable="authStore.isLoading"
+              :rules="[(value) => !!value || 'กรุณากรอกอีเมลหรือ Username']"
             >
               <template #prepend>
                 <q-icon name="person" color="grey-5" />
@@ -54,42 +55,42 @@
             <q-input
               v-model="password"
               outlined
-              type="password"
+              :type="showPassword ? 'text' : 'password'"
               label="รหัสผ่าน"
               dense
+              autocomplete="current-password"
+              :disable="authStore.isLoading"
+              :rules="[(value) => !!value || 'กรุณากรอกรหัสผ่าน']"
             >
               <template #prepend>
                 <q-icon name="lock" color="grey-5" />
               </template>
+              <template #append>
+                <q-btn
+                  flat
+                  round
+                  dense
+                  :icon="showPassword ? 'visibility_off' : 'visibility'"
+                  :aria-label="showPassword ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'"
+                  :disable="authStore.isLoading"
+                  @click="showPassword = !showPassword"
+                />
+              </template>
             </q-input>
 
-            <q-select
-              v-model="selectedRole"
-              outlined
-              dense
-              :options="roleOptions"
-              option-label="label"
-              option-value="value"
-              label="เลือกบทบาททดสอบ (Demo Role)"
-              emit-value
-              map-options
-            >
-              <template #prepend>
-                <q-icon name="badge" color="grey-5" />
-              </template>
-            </q-select>
-
             <q-btn
+              type="submit"
               color="primary"
               label="เข้าสู่ระบบ"
               class="full-width text-weight-bold q-mt-sm"
               size="md"
               unelevated
               no-caps
-              @click="handleLogin"
+              :loading="authStore.isLoading"
+              :disable="!identifier.trim() || !password"
               style="height: 44px; border-radius: var(--radius-sm)"
             />
-          </q-card-section>
+          </q-form>
         </q-card>
       </q-page>
     </q-page-container>
@@ -98,39 +99,35 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useQuasar } from 'quasar';
 import { useRouter } from 'vue-router';
-import { useAuthStore, type UserRole } from '@/stores/auth.store';
+import { useAuthStore } from '@/stores/auth.store';
 
-const email = ref('admin@kistock.com');
-const password = ref('123456');
-const selectedRole = ref<UserRole>('ADMIN');
+const identifier = ref('');
+const password = ref('');
+const showPassword = ref(false);
 
+const $q = useQuasar();
 const router = useRouter();
 const authStore = useAuthStore();
 
-const roleOptions = [
-  { label: 'ผู้ดูแลระบบ (Admin)', value: 'ADMIN' },
-  { label: 'พนักงานคลังสินค้า (Warehouse)', value: 'WAREHOUSE' },
-  { label: 'พนักงานขาย (Sales)', value: 'SALES' },
-];
+async function handleLogin(): Promise<void> {
+  try {
+    await authStore.login({
+      username: identifier.value.trim(),
+      password: password.value,
+    });
 
-function handleLogin(): void {
-  const roleNameMap: Record<UserRole, string> = {
-    ADMIN: 'ผู้ดูแลระบบ (Admin)',
-    WAREHOUSE: 'พนักงานคลังสินค้า',
-    SALES: 'พนักงานขาย',
-  };
+    const redirect = typeof router.currentRoute.value.query.redirect === 'string'
+      ? router.currentRoute.value.query.redirect
+      : '/';
 
-  authStore.setUser(
-    {
-      id: 1,
-      name: roleNameMap[selectedRole.value],
-      email: email.value,
-      role: selectedRole.value,
-    },
-    'mock-token-' + Date.now(),
-  );
-
-  void router.push('/');
+    await router.replace(redirect);
+  } catch (error) {
+    $q.notify({
+      type: 'negative',
+      message: error instanceof Error ? error.message : 'เข้าสู่ระบบไม่สำเร็จ',
+    });
+  }
 }
 </script>

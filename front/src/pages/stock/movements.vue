@@ -23,7 +23,34 @@
           />
         </div>
         <div class="col-12 col-sm-4">
-          <q-input v-model="filterDate" outlined dense type="date" label="วันที่" clearable />
+          <q-input
+            v-model="filterDate"
+            outlined
+            dense
+            readonly
+            clearable
+            label="วันที่"
+            placeholder="เลือกวันที่"
+            :display-value="formatDate(filterDate)"
+            aria-label="เลือกวันที่สำหรับกรองประวัติการเคลื่อนไหว"
+          >
+            <template #prepend>
+              <q-icon name="calendar_month" aria-hidden="true" />
+            </template>
+            <q-popup-proxy
+              ref="datePickerRef"
+              cover
+              transition-show="scale"
+              transition-hide="scale"
+            >
+              <q-date
+                v-model="filterDate"
+                mask="YYYY-MM-DD"
+                today-btn
+                @update:model-value="onDateSelected"
+              />
+            </q-popup-proxy>
+          </q-input>
         </div>
       </q-card-section>
     </q-card>
@@ -70,12 +97,23 @@ const { stockMovements } = useStock();
 
 const filterType = ref<MovementType | null>(null);
 const filterDate = ref<string | null>(null);
+const datePickerRef = ref();
 
 const typeOptions = [
   { label: 'รับเข้า (IN)', value: 'IN' },
   { label: 'จ่ายออก (OUT)', value: 'OUT' },
   { label: 'ปรับปรุงสต็อก (ADJUST)', value: 'ADJUST' },
 ];
+
+function formatDate(date: string | null): string {
+  if (!date) return '';
+  const [year, month, day] = date.split('-');
+  return `${day}/${month}/${year}`;
+}
+
+function onDateSelected(): void {
+  datePickerRef.value?.hide();
+}
 
 const columns = [
   {

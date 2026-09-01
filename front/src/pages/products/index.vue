@@ -75,21 +75,25 @@
 
       <template #body-cell-stockQty="props">
         <q-td :props="props">
-          <span
-            :class="{
-              'text-negative text-weight-bold': props.row.stockQty <= props.row.reorderPoint,
-              'text-positive': props.row.stockQty > props.row.reorderPoint,
-            }"
-          >
+          <span class="text-dark text-weight-medium">
             {{ props.row.stockQty }}
           </span>
+          <q-icon
+            v-if="props.row.stockQty <= props.row.reorderPoint"
+            name="warning"
+            color="warning"
+            size="16px"
+            class="q-ml-xs"
+          >
+            <q-tooltip>ต่ำกว่าจุดสั่งซื้อ</q-tooltip>
+          </q-icon>
         </q-td>
       </template>
 
       <template #body-cell-crossReferences="props">
         <q-td :props="props">
           <q-chip
-            v-for="cross in props.row.crossReferences"
+            v-for="cross in visibleCrossReferences(props.row.crossReferences)"
             :key="cross"
             dense
             outline
@@ -98,6 +102,19 @@
             class="q-mr-xs"
           >
             {{ cross }}
+          </q-chip>
+          <q-chip
+            v-if="hiddenCrossReferenceCount(props.row.crossReferences) > 0"
+            dense
+            outline
+            color="grey-7"
+            size="xs"
+            class="cursor-pointer"
+          >
+            +{{ hiddenCrossReferenceCount(props.row.crossReferences) }} more
+            <q-tooltip>
+              {{ hiddenCrossReferences(props.row.crossReferences).join(', ') }}
+            </q-tooltip>
           </q-chip>
         </q-td>
       </template>
@@ -129,15 +146,55 @@
       @confirm="saveProduct"
     >
       <div class="q-gutter-md">
-        <q-input v-model="form.partNumber" outlined dense label="รหัสสินค้า (Part Number)" />
-        <q-input v-model="form.name" outlined dense label="ชื่อสินค้า / อะไหล่" />
+        <q-input
+          v-model="form.partNumber"
+          outlined
+          dense
+          label="รหัสสินค้า (Part Number) *"
+          :rules="[(val) => !!val || 'กรุณากรอกรหัสสินค้า']"
+        />
+        <q-input
+          v-model="form.name"
+          outlined
+          dense
+          label="ชื่อสินค้า / อะไหล่ *"
+          :rules="[(val) => !!val || 'กรุณากรอกชื่อสินค้า']"
+        />
 
         <div class="row q-col-gutter-sm">
-          <div class="col-6">
-            <q-input v-model="form.category" outlined dense label="ตำแหน่ง" />
+          <div class="col-12 col-sm-6">
+            <q-select
+              v-model="form.category"
+              outlined
+              dense
+              use-input
+              fill-input
+              hide-selected
+              input-debounce="0"
+              label="ตำแหน่ง *"
+              :options="filteredCategoryOptions"
+              :rules="[(val) => !!val || 'กรุณาเลือกหรือเพิ่มตำแหน่ง']"
+              new-value-mode="add-unique"
+              @filter="filterCategories"
+              @new-value="addCategoryOption"
+            />
           </div>
-          <div class="col-6">
-            <q-input v-model="form.brand" outlined dense label="ยี่ห้อ" />
+          <div class="col-12 col-sm-6">
+            <q-select
+              v-model="form.brand"
+              outlined
+              dense
+              use-input
+              fill-input
+              hide-selected
+              input-debounce="0"
+              label="ยี่ห้อ *"
+              :options="filteredBrandOptions"
+              :rules="[(val) => !!val || 'กรุณาเลือกหรือเพิ่มยี่ห้อ']"
+              new-value-mode="add-unique"
+              @filter="filterBrands"
+              @new-value="addBrandOption"
+            />
           </div>
         </div>
 
@@ -179,16 +236,26 @@
               outlined
               dense
               label="ราคาขาย (บาท)"
+              :error="isSaleBelowCost"
+              error-message="ราคาขายต่ำกว่าราคาทุน กรุณาตรวจสอบกำไร"
             />
           </div>
         </div>
 
-        <q-input
-          v-model="crossRefInput"
+        <q-select
+          v-model="form.crossReferences"
           outlined
           dense
-          label="เบอร์อะไหล่เทียบ (ใส่เครื่องหมาย , เพื่อคั่น)"
-          hint="ตัวอย่าง: DID-25H-90L, RK-25H-90L"
+          use-input
+          use-chips
+          multiple
+          hide-dropdown-icon
+          input-debounce="0"
+          label="เบอร์อะไหล่เทียบ"
+          hint="พิมพ์แล้วกด Enter หรือ comma เพื่อเพิ่มเป็น tag"
+          new-value-mode="add-unique"
+          @new-value="addCrossReference"
+          @input-value="handleCrossReferenceInput"
         />
       </div>
     </BaseModal>
@@ -238,12 +305,13 @@ const filterCategory = ref<string | null>(null);
 const filterBrand = ref<string | null>(null);
 const filterType = ref<string | null>(null);
 
-const categoryOptions = computed(() =>
-  [...new Set(products.value.map((p) => p.category))].map((c) => ({ label: c, value: c })),
-);
-const brandOptions = computed(() =>
-  [...new Set(products.value.map((p) => p.brand))].map((b) => ({ label: b, value: b })),
-);
+const masterCategories = ref<string[]>([]);
+const masterBrands = ref<string[]>([]);
+const filteredCategoryOptions = ref<string[]>([]);
+const filteredBrandOptions = ref<string[]>([]);
+
+const categoryOptions = computed(() => masterCategories.value.map((c) => ({ label: c, value: c })));
+const brandOptions = computed(() => masterBrands.value.map((b) => ({ label: b, value: b })));
 const typeOptions = [
   { label: 'OEM', value: 'OEM' },
   { label: 'Aftermarket', value: 'Aftermarket' },
@@ -261,7 +329,6 @@ const filteredProducts = computed(() =>
 const isModalOpen = ref(false);
 const isEditMode = ref(false);
 const editingId = ref<number | null>(null);
-const crossRefInput = ref('');
 
 const form = reactive<Omit<Product, 'id' | 'stockQty'>>({
   partNumber: '',
@@ -275,6 +342,96 @@ const form = reactive<Omit<Product, 'id' | 'stockQty'>>({
   crossReferences: [],
 });
 
+const isSaleBelowCost = computed(() => Number(form.salePrice) < Number(form.costPrice));
+
+function syncMasterOptions(): void {
+  masterCategories.value = [
+    ...new Set([...masterCategories.value, ...products.value.map((p) => p.category)]),
+  ].filter(Boolean);
+  masterBrands.value = [
+    ...new Set([...masterBrands.value, ...products.value.map((p) => p.brand)]),
+  ].filter(Boolean);
+  filteredCategoryOptions.value = [...masterCategories.value];
+  filteredBrandOptions.value = [...masterBrands.value];
+}
+
+syncMasterOptions();
+
+function filterCategories(val: string, update: (callback: () => void) => void): void {
+  update(() => {
+    const needle = val.toLowerCase();
+    filteredCategoryOptions.value = masterCategories.value.filter((option) =>
+      option.toLowerCase().includes(needle),
+    );
+  });
+}
+
+function filterBrands(val: string, update: (callback: () => void) => void): void {
+  update(() => {
+    const needle = val.toLowerCase();
+    filteredBrandOptions.value = masterBrands.value.filter((option) =>
+      option.toLowerCase().includes(needle),
+    );
+  });
+}
+
+function addCategoryOption(
+  value: string,
+  done: (item?: string, mode?: 'add' | 'add-unique' | 'toggle') => void,
+): void {
+  const normalized = value.trim();
+  if (normalized && !masterCategories.value.includes(normalized)) {
+    masterCategories.value.push(normalized);
+  }
+  done(normalized, 'add-unique');
+}
+
+function addBrandOption(
+  value: string,
+  done: (item?: string, mode?: 'add' | 'add-unique' | 'toggle') => void,
+): void {
+  const normalized = value.trim();
+  if (normalized && !masterBrands.value.includes(normalized)) {
+    masterBrands.value.push(normalized);
+  }
+  done(normalized, 'add-unique');
+}
+
+function addCrossReference(
+  value: string,
+  done: (item?: string, mode?: 'add' | 'add-unique' | 'toggle') => void,
+): void {
+  const normalized = value.trim().replace(/,$/, '');
+  if (normalized) {
+    done(normalized, 'add-unique');
+  }
+}
+
+function handleCrossReferenceInput(value: string): void {
+  if (!value.includes(',')) return;
+  value
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .forEach((item) => {
+      if (!form.crossReferences.includes(item)) {
+        form.crossReferences.push(item);
+      }
+    });
+}
+
+function visibleCrossReferences(crossReferences: string[]): string[] {
+  return crossReferences.slice(0, 2);
+}
+
+function hiddenCrossReferences(crossReferences: string[]): string[] {
+  return crossReferences.slice(2);
+}
+
+function hiddenCrossReferenceCount(crossReferences: string[]): number {
+  return hiddenCrossReferences(crossReferences).length;
+}
+
 function openAddModal(): void {
   isEditMode.value = false;
   editingId.value = null;
@@ -286,7 +443,8 @@ function openAddModal(): void {
   form.costPrice = 0;
   form.salePrice = 0;
   form.reorderPoint = 5;
-  crossRefInput.value = '';
+  form.crossReferences = [];
+  syncMasterOptions();
   isModalOpen.value = true;
 }
 
@@ -301,15 +459,15 @@ function editProduct(product: Product): void {
   form.costPrice = product.costPrice;
   form.salePrice = product.salePrice;
   form.reorderPoint = product.reorderPoint;
-  crossRefInput.value = product.crossReferences.join(', ');
+  form.crossReferences = [...product.crossReferences];
+  syncMasterOptions();
   isModalOpen.value = true;
 }
 
 function saveProduct(): void {
-  const crossRefs = crossRefInput.value
-    .split(',')
-    .map((s) => s.trim())
-    .filter((s) => s.length > 0);
+  if (!form.partNumber || !form.name || !form.category || !form.brand) return;
+
+  const crossRefs = form.crossReferences.map((s) => s.trim()).filter((s) => s.length > 0);
 
   if (isEditMode.value && editingId.value !== null) {
     updateProduct(editingId.value, { ...form, crossReferences: crossRefs });
@@ -321,7 +479,9 @@ function saveProduct(): void {
 }
 
 function removeProduct(id: number): void {
-  if (confirm('คุณต้องการลบรายการสินค้านี้ใช่หรือไม่?')) {
+  const product = products.value.find((p) => p.id === id);
+  const label = product?.name || 'รายการสินค้านี้';
+  if (confirm(`ยืนยันการลบ ${label}?`)) {
     deleteProduct(id);
   }
 }

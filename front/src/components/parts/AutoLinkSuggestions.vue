@@ -188,8 +188,8 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { useProducts } from '@/composables/use-products';
 import { useVehicles } from '@/composables/use-vehicles';
-import * as compatibilityService from '@/services/mockCompatibilityService';
-import type { LinkSuggestion } from '@/services/mockCompatibilityService';
+import * as compatibilityService from '@/services/compatibility.service';
+import type { LinkSuggestion } from '@/services/compatibility.service';
 
 // Props
 interface Props {

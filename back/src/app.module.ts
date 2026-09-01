@@ -18,6 +18,7 @@ import { AdminStockTransactionsModule } from './admin-stock-transactions/admin-s
 import { AdminStockAdjustmentsModule } from './admin-stock-adjustments/admin-stock-adjustments.module';
 import { AdminStockAlertsModule } from './admin-stock-alerts/admin-stock-alerts.module';
 import { AdminAuditLogsModule } from './admin-audit-logs/admin-audit-logs.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -53,6 +54,7 @@ import { AdminAuditLogsModule } from './admin-audit-logs/admin-audit-logs.module
     AdminStockAdjustmentsModule,
     AdminStockAlertsModule,
     AdminAuditLogsModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

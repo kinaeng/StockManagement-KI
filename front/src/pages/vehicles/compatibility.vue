@@ -446,10 +446,10 @@
           />
         </q-tab-panel>
 
-        <!-- Tab 4: Vehicle Photo Lookup Demo -->
+        <!-- Tab 4: Vehicle Photo Lookup -->
         <q-tab-panel name="photoLookup">
-          <div class="vehicle-photo-demo">
-            <div class="vehicle-photo-demo__header">
+          <div class="vehicle-photo-lookup">
+            <div class="vehicle-photo-lookup__header">
               <div>
                 <div class="text-h6 text-primary q-mb-xs">
                   <q-icon name="photo_camera" class="q-mr-sm" />
@@ -459,15 +459,14 @@
                   อัปโหลดรูปรถเพื่อจำลองการวิเคราะห์รุ่น ปีผลิต และความใกล้เคียงกับฐานข้อมูลรถในระบบ
                 </div>
               </div>
-              <q-chip color="blue-1" text-color="blue-8" icon="science" size="sm">Demo mock</q-chip>
             </div>
 
             <div class="row q-col-gutter-lg">
               <div class="col-12 col-md-5">
                 <div
-                  class="vehicle-photo-demo__dropzone"
+                  class="vehicle-photo-lookup__dropzone"
                   :class="{
-                    'vehicle-photo-demo__dropzone--has-image': Boolean(vehiclePhotoPreviewUrl),
+                    'vehicle-photo-lookup__dropzone--has-image': Boolean(vehiclePhotoPreviewUrl),
                   }"
                 >
                   <q-img
@@ -475,9 +474,9 @@
                     :src="vehiclePhotoPreviewUrl"
                     ratio="4/3"
                     fit="cover"
-                    class="vehicle-photo-demo__preview"
+                    class="vehicle-photo-lookup__preview"
                   />
-                  <div v-else class="vehicle-photo-demo__empty">
+                  <div v-else class="vehicle-photo-lookup__empty">
                     <q-icon name="add_a_photo" size="56px" color="primary" />
                     <div class="text-weight-bold q-mt-md">เลือกรูปรถสำหรับวิเคราะห์</div>
                     <div class="text-caption text-grey-6">รองรับ JPG, PNG หรือ WEBP</div>
@@ -532,13 +531,13 @@
                   v-if="vehiclePhotoAnalyzing"
                   flat
                   bordered
-                  class="vehicle-photo-demo__state"
+                  class="vehicle-photo-lookup__state"
                 >
                   <q-card-section class="text-center q-py-xl">
                     <q-spinner-dots color="primary" size="44px" />
                     <div class="text-weight-bold q-mt-md">กำลังวิเคราะห์รูปรถ...</div>
                     <div class="text-caption text-grey-6">
-                      ระบบ demo กำลังเทียบรูปกับฐานข้อมูลรุ่นรถ
+                      กำลังส่งรูปเพื่อวิเคราะห์กับระบบ
                     </div>
                   </q-card-section>
                 </q-card>
@@ -547,13 +546,13 @@
                   v-else-if="vehiclePhotoResult"
                   flat
                   bordered
-                  class="vehicle-photo-demo__result"
+                  class="vehicle-photo-lookup__result"
                 >
                   <q-card-section>
                     <div class="row items-start q-col-gutter-md">
                       <div class="col">
                         <div class="text-caption text-grey-7">ผลลัพธ์ที่ใกล้เคียงที่สุด</div>
-                        <div class="vehicle-photo-demo__model">
+                        <div class="vehicle-photo-lookup__model">
                           {{ vehiclePhotoResult.vehicle.brand }}
                           {{ vehiclePhotoResult.vehicle.model }}
                         </div>
@@ -579,7 +578,7 @@
 
                     <q-separator class="q-my-md" />
 
-                    <div class="text-subtitle2 q-mb-sm">เหตุผลประกอบการจำลอง</div>
+                    <div class="text-subtitle2 q-mb-sm">เหตุผลประกอบการวิเคราะห์</div>
                     <div class="row q-col-gutter-sm q-mb-md">
                       <div
                         v-for="signal in vehiclePhotoResult.signals"
@@ -640,7 +639,7 @@
                   </q-card-section>
                 </q-card>
 
-                <q-card v-else flat bordered class="vehicle-photo-demo__state">
+                <q-card v-else flat bordered class="vehicle-photo-lookup__state">
                   <q-card-section class="text-center q-py-xl">
                     <q-icon name="image_search" size="56px" class="text-grey-5 q-mb-md" />
                     <div class="text-weight-bold text-grey-8">ยังไม่มีผลการวิเคราะห์</div>
@@ -663,7 +662,7 @@ import { ref, computed, onBeforeUnmount } from 'vue';
 import { useVehicles, type VehicleModel, type CompatibilityMap } from '@/composables/use-vehicles';
 import { useProducts, type Product } from '@/composables/use-products';
 import AutoLinkSuggestions from '@/components/parts/AutoLinkSuggestions.vue';
-import type { LinkSuggestion } from '@/services/mockCompatibilityService';
+import type { LinkSuggestion } from '@/services/compatibility.service';
 
 const tab = ref<'vehicleToParts' | 'crossReference' | 'autoSuggestions' | 'photoLookup'>(
   'vehicleToParts',
@@ -893,75 +892,12 @@ function handleVehiclePhotoSelected(file: File | null): void {
   vehiclePhotoPreviewUrl.value = URL.createObjectURL(file);
 }
 
-async function analyzeVehiclePhoto(): Promise<void> {
+function analyzeVehiclePhoto(): void {
   if (!vehiclePhotoFile.value) return;
 
   vehiclePhotoAnalyzing.value = true;
   vehiclePhotoResult.value = null;
-
-  await new Promise((resolve) => setTimeout(resolve, 1100));
-
-  const fileName = vehiclePhotoFile.value.name.toLowerCase();
-  const fileSeed = Array.from(vehiclePhotoFile.value.name).reduce(
-    (sum, char) => sum + char.charCodeAt(0),
-    vehiclePhotoFile.value.size,
-  );
-  const keywordVehicle = findVehicleByPhotoKeyword(fileName);
-  const primaryIndex = fileSeed % vehicleModels.value.length;
-  const primaryVehicle =
-    keywordVehicle ?? vehicleModels.value[primaryIndex] ?? vehicleModels.value[0];
-
-  if (!primaryVehicle) {
-    vehiclePhotoAnalyzing.value = false;
-    return;
-  }
-
-  const alternatives = vehicleModels.value
-    .filter((vehicle) => vehicle.id !== primaryVehicle.id)
-    .slice(0, 3)
-    .map((vehicle, index) => ({
-      vehicle,
-      confidence: Math.max(61, 78 - index * 7),
-    }));
-
-  vehiclePhotoResult.value = {
-    vehicle: primaryVehicle,
-    confidence: keywordVehicle ? 96 : 88 + (fileSeed % 8),
-    signals: [
-      keywordVehicle
-        ? `พบคำใบ้จากชื่อไฟล์ "${vehiclePhotoFile.value.name}"`
-        : 'ทรงตัวถังและไฟหน้าใกล้เคียง',
-      `ขนาดเครื่องยนต์ประมาณ ${primaryVehicle.engineCc} cc`,
-      `ฐานข้อมูลปีผลิต ${primaryVehicle.yearRange}`,
-      'เทียบจากข้อมูล mock ในระบบ',
-    ],
-    alternatives,
-  };
   vehiclePhotoAnalyzing.value = false;
-}
-
-function findVehicleByPhotoKeyword(fileName: string): VehicleModel | undefined {
-  const keywordToModel: Array<[string, string]> = [
-    ['fino', 'fino'],
-    ['mio', 'fino'],
-    ['wave', 'wave'],
-    ['click', 'click'],
-    ['scoopy', 'scoopy'],
-    ['pcx', 'pcx'],
-    ['spark', 'spark'],
-    ['exciter', 'exciter'],
-    ['nmax', 'nmax'],
-    ['aerox', 'aerox'],
-    ['raider', 'raider'],
-    ['ninja', 'ninja'],
-    ['z250', 'z250'],
-  ];
-
-  const match = keywordToModel.find(([keyword]) => fileName.includes(keyword));
-  if (!match) return undefined;
-
-  const [, modelKeyword] = match;
-  return vehicleModels.value.find((vehicle) => vehicle.model.toLowerCase().includes(modelKeyword));
 }
 
 function usePhotoDetectedVehicle(vehicleId: number): void {
@@ -989,7 +925,7 @@ onBeforeUnmount(() => {
 </script>
 
 <style lang="scss" scoped>
-.vehicle-photo-demo {
+.vehicle-photo-lookup {
   &__header {
     display: flex;
     align-items: flex-start;
@@ -1046,7 +982,7 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 599px) {
-  .vehicle-photo-demo {
+  .vehicle-photo-lookup {
     &__header {
       display: block;
     }

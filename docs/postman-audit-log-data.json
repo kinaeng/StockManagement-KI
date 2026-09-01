@@ -1,0 +1,7 @@
+[
+  {
+    "resourceName": "Audit Logs",
+    "resourcePath": "/admin/audit-logs",
+    "createBody": "{\"userId\":1,\"action\":\"POSTMAN_TEST\",\"entityName\":\"PostmanCollection\",\"entityId\":1,\"payload\":\"{\\\"source\\\":\\\"postman\\\"}\"}"
+  }
+]
