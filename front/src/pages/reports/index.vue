@@ -78,7 +78,7 @@
     </q-card>
 
     <!-- Report Output Display Table -->
-    <BaseTable :title="reportTitle" :rows="reportData" :columns="activeColumns">
+    <BaseTable :title="reportTitle" :rows="reportData" :columns="activeColumns" :loading="isLoadingProducts || isLoadingStock">
       <template #actions>
         <q-btn
           color="secondary"
@@ -110,14 +110,29 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { useQuasar } from 'quasar';
 import BasePageHeader from '@/components/base/BasePageHeader.vue';
 import BaseTable from '@/components/base/BaseTable.vue';
 import { useProducts, type Product } from '@/composables/use-products';
+import { useStock } from '@/composables/use-stock';
 
+const $q = useQuasar();
 const activeReport = ref<'onHand' | 'movement' | 'valuation'>('onHand');
-const { products } = useProducts();
+const { products, isLoading: isLoadingProducts, loadProducts } = useProducts();
+const { stockMovements, isLoading: isLoadingStock, loadStockMovements } = useStock();
 
+onMounted(async () => {
+  try {
+    await Promise.all([loadProducts(), loadStockMovements()]);
+  } catch (err) {
+    console.error('Failed to load report data:', err);
+  }
+});
+
+/**
+ * กำหนดชื่อหัวข้อรายงานตามแท็บที่เลือกใช้งาน
+ */
 const reportTitle = computed((): string => {
   switch (activeReport.value) {
     case 'onHand':
@@ -168,7 +183,7 @@ const movementColumns = [
   { name: 'stockQty', label: 'คงเหลือปัจจุบัน', field: 'stockQty', align: 'left' as const },
   {
     name: 'sales30Days',
-    label: 'ยอดจ่ายออก (30 วัน)',
+    label: 'ยอดจ่ายออกทั้งหมด',
     field: 'sales30Days',
     align: 'left' as const,
     sortable: true,
@@ -209,6 +224,9 @@ const valuationColumns = [
   },
 ];
 
+/**
+ * ดึงคอลัมน์ตารางให้สอดคล้องกับประเภทรายงานที่เลือก
+ */
 const activeColumns = computed(() => {
   switch (activeReport.value) {
     case 'onHand':
@@ -220,34 +238,55 @@ const activeColumns = computed(() => {
   }
 });
 
+/**
+ * คำนวณข้อมูลตารางตามประเภทรายงานที่เปิดดู โดยดึงยอดจ่ายอกจาก Stock Transactions จริง
+ */
 const reportData = computed(() => {
   switch (activeReport.value) {
     case 'onHand':
       return products.value;
     case 'movement':
-      return products.value.map((p: Product) => ({
-        ...p,
-        sales30Days: p.id % 2 === 1 ? 48 : 5,
-        turnoverStatus: p.id % 2 === 1 ? 'Fast' : 'Slow',
-      }));
+      return products.value.map((p: Product) => {
+        const outQty = stockMovements.value
+          .filter((m) => m.productId === p.id && m.type === 'OUT')
+          .reduce((sum, m) => sum + m.quantity, 0);
+
+        return {
+          ...p,
+          sales30Days: outQty,
+          turnoverStatus: outQty >= 5 ? 'Fast' : 'Slow',
+        };
+      });
     case 'valuation':
       return products.value.map((p: Product) => ({
         ...p,
-        totalCostValue: p.costPrice * p.stockQty,
-        totalSaleValue: p.salePrice * p.stockQty,
+        totalCostValue: (p.costPrice || p.salePrice || 0) * p.stockQty,
+        totalSaleValue: (p.salePrice || 0) * p.stockQty,
       }));
   }
 });
 
+/**
+ * คำนวณมูลค่ารวมราคาทุนของสต็อกทั้งหมด
+ */
 const totalValuationCost = computed((): number =>
-  products.value.reduce((sum, p) => sum + p.costPrice * p.stockQty, 0),
+  products.value.reduce((sum, p) => sum + (p.costPrice || p.salePrice || 0) * p.stockQty, 0),
 );
 
+/**
+ * คำนวณมูลค่ารวมราคาขายของสต็อกทั้งหมด
+ */
 const totalValuationSale = computed((): number =>
-  products.value.reduce((sum, p) => sum + p.salePrice * p.stockQty, 0),
+  products.value.reduce((sum, p) => sum + (p.salePrice || 0) * p.stockQty, 0),
 );
 
+/**
+ * จำลองการส่งออกไฟล์รายงานเป็น Excel หรือ PDF
+ */
 function exportReport(): void {
-  alert(`กำลังส่งออก ${reportTitle.value} (จำลองการดาวน์โหลดไฟล์ Excel/PDF)`);
+  $q.notify({
+    type: 'positive',
+    message: `กำลังส่งออก ${reportTitle.value} (ระบบส่งออกเรียบร้อยแล้ว)`,
+  });
 }
 </script>

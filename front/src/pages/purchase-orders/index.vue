@@ -59,7 +59,12 @@
     </div>
 
     <!-- Table of Purchase Orders -->
-    <BaseTable title="รายการใบสั่งซื้อย้อนหลัง" :rows="purchaseOrders" :columns="columns">
+    <BaseTable
+      title="รายการใบสั่งซื้อย้อนหลัง"
+      :rows="purchaseOrders"
+      :columns="columns"
+      :loading="isLoading"
+    >
       <template #body-cell-itemsCount="props">
         <q-td :props="props">
           <q-chip color="blue-1" text-color="blue-9" size="sm" class="q-px-xs text-weight-bold">
@@ -139,30 +144,28 @@
                 outlined
                 dense
                 label="เลขที่ใบสั่งซื้อ (PO Number)"
-                readonly
-                hint="ระบบรันเลขให้อัตโนมัติ"
+                hint="ตัวอย่าง: PO-2026-001"
               />
             </div>
             <div class="col-12 col-sm-6">
               <q-select
-                v-model="form.supplierName"
+                v-model="selectedSupplier"
                 outlined
                 dense
-                :options="suppliers.map((s) => s.name)"
+                :options="supplierOptions"
                 label="เลือกผู้จำหน่าย / ซัพพลายเออร์"
+                emit-value
+                map-options
               />
             </div>
           </div>
 
           <!-- Item Selection Section -->
           <div class="text-subtitle2 text-weight-bold q-mt-md row items-center justify-between">
-            <span
-              ><q-icon
-                name="format_list_bulleted"
-                color="primary"
-                class="q-mr-xs"
-              />รายการสินค้าที่จะสั่งซื้อ</span
-            >
+            <span>
+              <q-icon name="format_list_bulleted" color="primary" class="q-mr-xs" />
+              รายการสินค้าที่จะสั่งซื้อ
+            </span>
             <q-btn
               flat
               dense
@@ -286,7 +289,8 @@
             unelevated
             no-caps
             class="text-weight-bold"
-            :disable="!form.supplierName || formItems.length === 0"
+            :loading="isLoading"
+            :disable="!selectedSupplier || formItems.length === 0 || !formItems.some(i => !!i.selectedProduct)"
             @click="savePO"
           />
         </q-card-actions>
@@ -392,14 +396,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue';
+import { ref, reactive, computed, onMounted } from 'vue';
+import { useQuasar } from 'quasar';
 import BasePageHeader from '@/components/base/BasePageHeader.vue';
 import BaseTable from '@/components/base/BaseTable.vue';
-import { useSuppliers, type PurchaseOrder, type POItem } from '@/composables/use-suppliers';
+import { useSuppliers, type PurchaseOrder } from '@/composables/use-suppliers';
 import { useProducts, type Product } from '@/composables/use-products';
 
-const { purchaseOrders, suppliers, addPO, updatePOStatus } = useSuppliers();
-const { products } = useProducts();
+const $q = useQuasar();
+const { purchaseOrders, suppliers, isLoading, loadSuppliers, loadPurchaseOrders, addPO, updatePOStatus } = useSuppliers();
+const { products, loadProducts } = useProducts();
 
 const statusOptions = [
   { label: 'รับสินค้าแล้ว', value: 'RECEIVED' },
@@ -435,6 +441,13 @@ const columns = [
   { name: 'actions', label: 'ดูรายการสินค้า', field: 'actions', align: 'right' as const },
 ];
 
+const supplierOptions = computed(() =>
+  suppliers.value.map((s) => ({
+    label: s.name,
+    value: s.id,
+  })),
+);
+
 // Product options for creation form select
 const productOptions = computed(() =>
   products.value.map((p: Product) => ({
@@ -442,18 +455,20 @@ const productOptions = computed(() =>
     value: p.id,
     partNumber: p.partNumber,
     name: p.name,
-    costPrice: p.costPrice,
+    costPrice: p.costPrice || p.salePrice || 0,
   })),
 );
 
+interface ProductOption {
+  label: string;
+  value: number;
+  partNumber: string;
+  name: string;
+  costPrice: number;
+}
+
 interface FormItemRow {
-  selectedProduct: {
-    label: string;
-    value: number;
-    partNumber: string;
-    name: string;
-    costPrice: number;
-  } | null;
+  selectedProduct: ProductOption | null;
   partNumber: string;
   productName: string;
   quantity: number;
@@ -464,12 +479,25 @@ interface FormItemRow {
 const isCreateModalOpen = ref(false);
 const isDetailModalOpen = ref(false);
 const selectedPO = ref<PurchaseOrder | null>(null);
+const selectedSupplier = ref<number | null>(null);
 
 const formItems = ref<FormItemRow[]>([]);
 const form = reactive({
   poNumber: '',
-  supplierName: '',
   note: '',
+});
+
+onMounted(async () => {
+  try {
+    await loadSuppliers();
+    await loadProducts();
+    await loadPurchaseOrders();
+  } catch (err) {
+    $q.notify({
+      type: 'negative',
+      message: err instanceof Error ? err.message : 'โหลดข้อมูลใบสั่งซื้อไม่สำเร็จ',
+    });
+  }
 });
 
 function generateNextPONumber(): string {
@@ -480,7 +508,7 @@ function generateNextPONumber(): string {
 
 function openCreateModal(): void {
   form.poNumber = generateNextPONumber();
-  form.supplierName = suppliers.value[0]?.name || '';
+  selectedSupplier.value = suppliers.value[0]?.id ?? null;
   form.note = '';
   formItems.value = [
     {
@@ -511,16 +539,7 @@ function removeItemRow(index: number): void {
   formItems.value.splice(index, 1);
 }
 
-function handleProductSelect(
-  index: number,
-  prodOpt: {
-    label: string;
-    value: number;
-    partNumber: string;
-    name: string;
-    costPrice: number;
-  } | null,
-): void {
+function handleProductSelect(index: number, prodOpt: ProductOption | null): void {
   if (prodOpt && formItems.value[index]) {
     formItems.value[index].partNumber = prodOpt.partNumber;
     formItems.value[index].productName = prodOpt.name;
@@ -575,26 +594,38 @@ const receivedPOCount = computed(
   (): number => purchaseOrders.value.filter((po) => po.status === 'RECEIVED').length,
 );
 
-function savePO(): void {
-  const poItems: POItem[] = formItems.value.map((item, idx) => ({
-    id: Date.now() + idx,
-    partNumber: item.partNumber || '-',
-    productName: item.productName || 'สินค้าสั่งซื้อ',
-    quantity: item.quantity || 1,
-    unitPrice: item.unitPrice || 0,
-    totalPrice: item.totalPrice || 0,
+async function savePO(): Promise<void> {
+  if (!selectedSupplier.value) return;
+
+  const validItems = formItems.value.filter((item) => item.selectedProduct !== null);
+  if (validItems.length === 0) return;
+
+  const items = validItems.map((item) => ({
+    productId: item.selectedProduct!.value,
+    orderedQty: item.quantity || 1,
+    unitCost: item.unitPrice || 0,
   }));
 
-  addPO({
-    poNumber: form.poNumber,
-    supplierName: form.supplierName,
-    items: poItems,
-    totalAmount: calculatedGrandTotal.value,
-    status: 'ORDERED',
-    note: form.note,
-  });
+  try {
+    await addPO({
+      poNumber: form.poNumber,
+      supplierId: selectedSupplier.value,
+      status: 'ORDERED',
+      items,
+      note: form.note,
+    });
 
-  isCreateModalOpen.value = false;
+    $q.notify({
+      type: 'positive',
+      message: 'บันทึกใบสั่งซื้อเรียบร้อยแล้ว',
+    });
+    isCreateModalOpen.value = false;
+  } catch (err) {
+    $q.notify({
+      type: 'negative',
+      message: err instanceof Error ? err.message : 'สร้างใบสั่งซื้อไม่สำเร็จ',
+    });
+  }
 }
 
 function viewPoDetail(po: PurchaseOrder): void {
@@ -602,8 +633,19 @@ function viewPoDetail(po: PurchaseOrder): void {
   isDetailModalOpen.value = true;
 }
 
-function handleStatusChange(id: number, newStatus: PurchaseOrder['status']): void {
-  updatePOStatus(id, newStatus);
+async function handleStatusChange(id: number, newStatus: PurchaseOrder['status']): Promise<void> {
+  try {
+    await updatePOStatus(id, newStatus);
+    $q.notify({
+      type: 'positive',
+      message: 'อัปเดตสถานะใบสั่งซื้อเรียบร้อยแล้ว',
+    });
+  } catch (err) {
+    $q.notify({
+      type: 'negative',
+      message: err instanceof Error ? err.message : 'อัปเดตสถานะไม่สำเร็จ',
+    });
+  }
 }
 
 function getStatusColor(status: PurchaseOrder['status']): string {

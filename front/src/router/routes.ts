@@ -41,6 +41,24 @@ const routes: RouteRecordRaw[] = [
           },
         ],
       },
+      {
+        path: 'suppliers',
+        children: [
+          {
+            path: '',
+            component: () => import('@/pages/suppliers/index.vue'),
+          },
+        ],
+      },
+      {
+        path: 'reports',
+        children: [
+          {
+            path: '',
+            component: () => import('@/pages/reports/index.vue'),
+          },
+        ],
+      },
     ],
   },
   {

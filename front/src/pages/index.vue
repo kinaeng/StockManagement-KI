@@ -6,7 +6,16 @@
         <h1 class="page-header__title">แดชบอร์ดสรุปภาพรวม</h1>
         <p class="page-header__subtitle">ภาพรวมสต็อกอะไหล่มอเตอร์ไซค์และสถานะสินค้าคงคลัง</p>
       </div>
-      <q-btn outline color="primary" icon="refresh" label="รีเฟรชข้อมูล" no-caps size="sm" />
+      <q-btn
+        outline
+        color="primary"
+        icon="refresh"
+        label="รีเฟรชข้อมูล"
+        no-caps
+        size="sm"
+        :loading="isLoadingProducts || isLoadingStock"
+        @click="refreshDashboard"
+      />
     </div>
 
     <!-- Stat Cards -->
@@ -180,25 +189,65 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
+import { useQuasar } from 'quasar';
 import { useProducts, type Product } from '@/composables/use-products';
 import { useStock } from '@/composables/use-stock';
 
-const { products, totalProducts, lowStockCount } = useProducts();
-const { stockMovements } = useStock();
+const $q = useQuasar();
+const { products, isLoading: isLoadingProducts, totalProducts, lowStockCount, loadProducts } = useProducts();
+const { stockMovements, isLoading: isLoadingStock, loadStockMovements } = useStock();
 
+/**
+ * โหลดข้อมูลแดชบอร์ดจาก Backend API ทั้งหมด
+ */
+async function refreshDashboard(): Promise<void> {
+  try {
+    await Promise.all([loadProducts(), loadStockMovements()]);
+    $q.notify({
+      type: 'positive',
+      message: 'อัปเดตข้อมูลแดชบอร์ดเรียบร้อยแล้ว',
+    });
+  } catch (err) {
+    $q.notify({
+      type: 'negative',
+      message: err instanceof Error ? err.message : 'โหลดข้อมูลแดชบอร์ดไม่สำเร็จ',
+    });
+  }
+}
+
+onMounted(async () => {
+  try {
+    await Promise.all([loadProducts(), loadStockMovements()]);
+  } catch (err) {
+    console.error('Failed to load dashboard data:', err);
+  }
+});
+
+/**
+ * คำนวณมูลค่าสินค้าคงคลังรวม (ราคาทุน * จำนวนคงเหลือ)
+ */
 const totalStockValue = computed((): number =>
-  products.value.reduce((sum: number, p: Product) => sum + p.costPrice * p.stockQty, 0),
+  products.value.reduce((sum: number, p: Product) => sum + (p.costPrice || p.salePrice || 0) * p.stockQty, 0),
 );
 
+/**
+ * คำนวณจำนวนรายการที่มีการเคลื่อนไหวสต็อกในวันนี้
+ */
 const todayMovementsCount = computed((): number => {
   const today = new Date().toISOString().substring(0, 10);
   return stockMovements.value.filter((m) => m.createdAt.startsWith(today)).length;
 });
 
+/**
+ * คัดกรองรายการสินค้าที่มีจำนวนคงเหลือต่ำกว่าหรือเท่ากับจุดสั่งซื้อ (Min Stock)
+ */
 const lowStockProducts = computed((): Product[] =>
   products.value.filter((p: Product) => p.stockQty <= p.reorderPoint),
 );
 
+/**
+ * ดึงรายการเคลื่อนไหวสต็อกล่าสุด 5 รายการแรก
+ */
 const recentMovements = computed(() => stockMovements.value.slice(0, 5));
 </script>

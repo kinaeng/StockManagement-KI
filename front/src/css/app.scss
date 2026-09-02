@@ -7,6 +7,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800&display=swap');
 
+// ลบกรอบฟ้า browser default และเงา focus
+*:focus {
+  outline: none !important;
+}
+
+// Reset quasar focused state to keep normal border/label color if needed
+.q-field--focused .q-field__control {
+  box-shadow: none !important;
+}
+
 // ========================================
 // CSS Custom Properties (Design Tokens)
 // ========================================
@@ -481,16 +491,17 @@ body {
   font-weight: var(--font-weight-normal);
 }
 
-// Keyboard accessibility: keep focus visible without affecting mouse users
+// Keyboard accessibility
+:focus,
 :focus-visible {
-  outline: none;
-  box-shadow: var(--focus-ring);
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 .q-btn:focus-visible,
-.q-item:focus-visible,
-.q-field--focused .q-field__control {
-  box-shadow: var(--focus-ring);
+.q-item:focus-visible {
+  outline: 2px solid var(--color-accent) !important;
+  outline-offset: 2px;
 }
 
 // Avoid motion for users who explicitly request reduced motion
@@ -537,4 +548,22 @@ h1, h2, h3, h4, h5, h6,
 .q-table td[data-type="number"],
 .number-display {
   font-feature-settings: 'tnum' 1; // Tabular numbers for better alignment
+}
+
+// ====================================================
+// ลบกรอบฟ้าทุก variant ของ Quasar input เมื่อ focus
+// ====================================================
+.q-field--focused .q-field__control::before,
+.q-field--focused .q-field__control::after,
+.q-field--outlined.q-field--focused .q-field__control::before,
+.q-field--outlined.q-field--focused .q-field__control::after,
+.q-field--filled.q-field--focused .q-field__control::before,
+.q-field--filled.q-field--focused .q-field__control::after {
+  border-color: #e2e8f0 !important;
+  border-width: 1px !important;
+  box-shadow: none !important;
+}
+
+.q-field--focused .q-field__control {
+  box-shadow: none !important;
 }

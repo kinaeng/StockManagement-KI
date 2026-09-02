@@ -1,4 +1,5 @@
 import { ref, computed } from 'vue';
+import * as productsService from '@/services/products.service';
 
 export interface Product {
   id: number;
@@ -14,6 +15,9 @@ export interface Product {
   crossReferences: string[];
   imageUrl?: string;
   location?: string;
+  unit?: string;
+  maxStock?: number;
+  status?: 'ACTIVE' | 'INACTIVE';
 }
 
 export function useProducts() {
@@ -27,21 +31,69 @@ export function useProducts() {
     (): number => products.value.filter((p) => p.stockQty <= p.reorderPoint).length,
   );
 
-  const addProduct = (newProduct: Omit<Product, 'id'>): void => {
-    const id = products.value.length > 0 ? Math.max(...products.value.map((p) => p.id)) + 1 : 1;
-    products.value.push({ ...newProduct, id });
-  };
+  const loadProducts = async (): Promise<void> => {
+    isLoading.value = true;
+    error.value = null;
 
-  const updateProduct = (id: number, updatedFields: Partial<Product>): void => {
-    const index = products.value.findIndex((p) => p.id === id);
-    const existing = products.value[index];
-    if (existing) {
-      Object.assign(existing, updatedFields);
+    try {
+      products.value = await productsService.getProducts();
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'โหลดข้อมูลสินค้าไม่สำเร็จ';
+      throw err;
+    } finally {
+      isLoading.value = false;
     }
   };
 
-  const deleteProduct = (id: number): void => {
-    products.value = products.value.filter((p) => p.id !== id);
+  const addProduct = async (newProduct: Omit<Product, 'id' | 'stockQty'> & { stockQty?: number }): Promise<void> => {
+    isLoading.value = true;
+    error.value = null;
+
+    try {
+      const product = await productsService.createProduct(newProduct);
+      products.value.unshift(product);
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'เพิ่มสินค้าไม่สำเร็จ';
+      throw err;
+    } finally {
+      isLoading.value = false;
+    }
+  };
+
+  const updateProduct = async (
+    id: number,
+    updatedFields: Partial<Omit<Product, 'id'>>,
+  ): Promise<void> => {
+    isLoading.value = true;
+    error.value = null;
+
+    try {
+      const updatedProduct = await productsService.updateProduct(id, updatedFields);
+      const index = products.value.findIndex((p) => p.id === id);
+      if (index !== -1) {
+        products.value[index] = updatedProduct;
+      }
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'แก้ไขสินค้าไม่สำเร็จ';
+      throw err;
+    } finally {
+      isLoading.value = false;
+    }
+  };
+
+  const deleteProduct = async (id: number): Promise<void> => {
+    isLoading.value = true;
+    error.value = null;
+
+    try {
+      await productsService.deleteProduct(id);
+      products.value = products.value.filter((p) => p.id !== id);
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'ลบสินค้าไม่สำเร็จ';
+      throw err;
+    } finally {
+      isLoading.value = false;
+    }
   };
 
   return {
@@ -50,6 +102,7 @@ export function useProducts() {
     error,
     totalProducts,
     lowStockCount,
+    loadProducts,
     addProduct,
     updateProduct,
     deleteProduct,

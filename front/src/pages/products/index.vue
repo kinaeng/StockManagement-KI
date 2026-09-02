@@ -60,7 +60,12 @@
     </q-card>
 
     <!-- Products Table -->
-    <BaseTable title="รายการอะไหล่ทั้งหมด" :rows="filteredProducts" :columns="columns">
+    <BaseTable
+      title="รายการอะไหล่ทั้งหมด"
+      :rows="filteredProducts"
+      :columns="columns"
+      :loading="isLoading"
+    >
       <template #body-cell-type="props">
         <q-td :props="props">
           <q-chip
@@ -143,6 +148,7 @@
       v-model="isModalOpen"
       :title="isEditMode ? 'แก้ไขข้อมูลสินค้า' : 'เพิ่มสินค้าใหม่'"
       confirm-label="บันทึก"
+      :loading="isLoading"
       @confirm="saveProduct"
     >
       <div class="q-gutter-md">
@@ -173,7 +179,6 @@
               input-debounce="0"
               label="ตำแหน่ง *"
               :options="filteredCategoryOptions"
-              :rules="[(val) => !!val || 'กรุณาเลือกหรือเพิ่มตำแหน่ง']"
               new-value-mode="add-unique"
               @filter="filterCategories"
               @new-value="addCategoryOption"
@@ -190,7 +195,6 @@
               input-debounce="0"
               label="ยี่ห้อ *"
               :options="filteredBrandOptions"
-              :rules="[(val) => !!val || 'กรุณาเลือกหรือเพิ่มยี่ห้อ']"
               new-value-mode="add-unique"
               @filter="filterBrands"
               @new-value="addBrandOption"
@@ -263,13 +267,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue';
+import { ref, reactive, computed, onMounted } from 'vue';
+import { useQuasar } from 'quasar';
 import BasePageHeader from '@/components/base/BasePageHeader.vue';
 import BaseTable from '@/components/base/BaseTable.vue';
 import BaseModal from '@/components/base/BaseModal.vue';
 import { useProducts, type Product } from '@/composables/use-products';
 
-const { products, addProduct, updateProduct, deleteProduct } = useProducts();
+const $q = useQuasar();
+const { products, isLoading, loadProducts, addProduct, updateProduct, deleteProduct } = useProducts();
 
 const columns = [
   {
@@ -356,6 +362,18 @@ function syncMasterOptions(): void {
 }
 
 syncMasterOptions();
+
+onMounted(async () => {
+  try {
+    await loadProducts();
+    syncMasterOptions();
+  } catch (err) {
+    $q.notify({
+      type: 'negative',
+      message: err instanceof Error ? err.message : 'โหลดข้อมูลสินค้าไม่สำเร็จ',
+    });
+  }
+});
 
 function filterCategories(val: string, update: (callback: () => void) => void): void {
   update(() => {
@@ -464,25 +482,41 @@ function editProduct(product: Product): void {
   isModalOpen.value = true;
 }
 
-function saveProduct(): void {
-  if (!form.partNumber || !form.name || !form.category || !form.brand) return;
+async function saveProduct(): Promise<void> {
+  if (!form.partNumber || !form.name) return;
 
   const crossRefs = form.crossReferences.map((s) => s.trim()).filter((s) => s.length > 0);
 
-  if (isEditMode.value && editingId.value !== null) {
-    updateProduct(editingId.value, { ...form, crossReferences: crossRefs });
-  } else {
-    addProduct({ ...form, stockQty: 0, crossReferences: crossRefs });
-  }
+  try {
+    if (isEditMode.value && editingId.value !== null) {
+      await updateProduct(editingId.value, { ...form, crossReferences: crossRefs });
+    } else {
+      await addProduct({ ...form, crossReferences: crossRefs });
+    }
 
-  isModalOpen.value = false;
+    syncMasterOptions();
+    isModalOpen.value = false;
+  } catch (err) {
+    $q.notify({
+      type: 'negative',
+      message: err instanceof Error ? err.message : 'บันทึกสินค้าไม่สำเร็จ',
+    });
+  }
 }
 
-function removeProduct(id: number): void {
+async function removeProduct(id: number): Promise<void> {
   const product = products.value.find((p) => p.id === id);
   const label = product?.name || 'รายการสินค้านี้';
   if (confirm(`ยืนยันการลบ ${label}?`)) {
-    deleteProduct(id);
+    try {
+      await deleteProduct(id);
+      syncMasterOptions();
+    } catch (err) {
+      $q.notify({
+        type: 'negative',
+        message: err instanceof Error ? err.message : 'ลบสินค้าไม่สำเร็จ',
+      });
+    }
   }
 }
 </script>

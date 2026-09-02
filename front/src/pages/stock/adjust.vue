@@ -251,17 +251,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useProducts, type Product } from '@/composables/use-products';
 import { useStock } from '@/composables/use-stock';
-import { useAuthStore } from '@/stores/auth.store';
 
 const router = useRouter();
-const authStore = useAuthStore();
 
-const { products, updateProduct } = useProducts();
-const { addMovement } = useStock();
+const { products, loadProducts, updateProduct } = useProducts();
+const { recordTransaction, recordAdjustment } = useStock();
+
+onMounted(async () => {
+  try {
+    await loadProducts();
+  } catch (err) {
+    console.error('Failed to load products:', err);
+  }
+});
 
 // Form state
 const selectedProductId = ref<number | null>(null);
@@ -327,20 +333,25 @@ async function handleSubmit(): Promise<void> {
   try {
     const reasonLabel = reasonOptions.find((r) => r.value === adjustReason.value)?.label || adjustReason.value;
 
-    // Add stock movement log
-    addMovement({
+    // Record adjustment & stock transaction via API
+    await recordAdjustment({
+      adjustmentNumber: `ADJ-${adjustReason.value.toUpperCase()}-${Date.now()}`,
+      reason: note.value || adjustReason.value,
       productId: product.id,
-      productName: product.name,
-      partNumber: product.partNumber,
-      type: 'ADJUST',
+      systemQty: product.stockQty,
+      actualQty: newQty.value,
+    });
+
+    await recordTransaction({
+      transactionNumber: `TX-ADJ-${Date.now()}`,
+      transactionType: 'ADJUST',
+      productId: product.id,
       quantity: Math.abs(adjustDiff.value),
-      refDocument: `ADJ-${adjustReason.value.toUpperCase()}-${Date.now()}`,
       note: `${reasonLabel}: ${note.value || '-'} (เดิม: ${product.stockQty} → ใหม่: ${newQty.value})`,
-      createdBy: authStore.currentUser?.name || 'พนักงานคลังสินค้า',
     });
 
     // Update stock level
-    updateProduct(product.id, { stockQty: newQty.value });
+    await updateProduct(product.id, { stockQty: newQty.value });
 
     // Show success message with details
     const changeText = adjustDiff.value > 0 ? `+${adjustDiff.value}` : `${adjustDiff.value}`;

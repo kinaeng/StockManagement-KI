@@ -1,0 +1,25 @@
+# Dependencies & System
+node_modules/
+.DS_Store
+Thumbs.db
+*.log
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# AI / IDE Agent folders
+.agents/
+.claude/
+.codex/
+.cursor/
+.impeccable/
+.scratch/
+.vscode/
+.idea/
+
+# Root markdown notes & scratch docs (เก็บเฉพาะโค้ดใน back และ front)
+/*.md
+!/README.md
+/skills-lock.json

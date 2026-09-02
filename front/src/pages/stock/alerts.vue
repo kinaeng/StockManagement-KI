@@ -18,7 +18,7 @@
     </BasePageHeader>
 
     <!-- Low Stock Table -->
-    <BaseTable title="สินค้าที่ต้องสั่งซื้อด่วน" :rows="lowStockProducts" :columns="columns">
+    <BaseTable title="สินค้าที่ต้องสั่งซื้อด่วน" :rows="lowStockProducts" :columns="columns" :loading="isLoading">
       <template #body-cell-status="props">
         <q-td :props="props">
           <q-chip color="negative" text-color="white" size="sm" icon="priority_high">
@@ -53,12 +53,20 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
 import BasePageHeader from '@/components/base/BasePageHeader.vue';
 import BaseTable from '@/components/base/BaseTable.vue';
 import { useProducts, type Product } from '@/composables/use-products';
 
-const { products } = useProducts();
+const { products, isLoading, loadProducts } = useProducts();
+
+onMounted(async () => {
+  try {
+    await loadProducts();
+  } catch (err) {
+    console.error('Failed to load products for alerts:', err);
+  }
+});
 
 const columns = [
   {

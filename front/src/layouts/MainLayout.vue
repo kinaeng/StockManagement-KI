@@ -154,6 +154,46 @@
           <q-item-section avatar><q-icon name="receipt_long" /></q-item-section>
           <q-item-section><q-item-label>ประวัติใบสั่งซื้อ (PO)</q-item-label></q-item-section>
         </q-item>
+
+        <q-separator class="sidebar-divider" />
+
+        <!-- ── จัดการข้อมูล ── -->
+        <div class="sidebar-section-label">จัดการข้อมูล (Master Data)</div>
+
+        <q-item
+          clickable
+          v-ripple
+          to="/suppliers/"
+          :aria-current="isActive('/suppliers') || isActive('/suppliers/') ? 'page' : undefined"
+          :class="[
+            'sidebar-item',
+            (isActive('/suppliers') || isActive('/suppliers/')) && 'sidebar-item--active',
+          ]"
+          @click="closeDrawerOnMobile"
+        >
+          <q-item-section avatar><q-icon name="storefront" /></q-item-section>
+          <q-item-section><q-item-label>ผู้จำหน่าย (Suppliers)</q-item-label></q-item-section>
+        </q-item>
+
+        <q-separator class="sidebar-divider" />
+
+        <!-- ── รายงาน ── -->
+        <div class="sidebar-section-label">รายงาน (Reports)</div>
+
+        <q-item
+          clickable
+          v-ripple
+          to="/reports/"
+          :aria-current="isActive('/reports') || isActive('/reports/') ? 'page' : undefined"
+          :class="[
+            'sidebar-item',
+            (isActive('/reports') || isActive('/reports/')) && 'sidebar-item--active',
+          ]"
+          @click="closeDrawerOnMobile"
+        >
+          <q-item-section avatar><q-icon name="bar_chart" /></q-item-section>
+          <q-item-section><q-item-label>รายงานและวิเคราะห์</q-item-label></q-item-section>
+        </q-item>
       </q-list>
     </q-drawer>
 

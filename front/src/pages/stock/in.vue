@@ -208,17 +208,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useProducts, type Product } from '@/composables/use-products';
 import { useStock } from '@/composables/use-stock';
-import { useAuthStore } from '@/stores/auth.store';
 
 const router = useRouter();
-const authStore = useAuthStore();
 
-const { products, updateProduct } = useProducts();
-const { addMovement } = useStock();
+const { products, loadProducts, updateProduct } = useProducts();
+const { recordTransaction } = useStock();
+
+onMounted(async () => {
+  try {
+    await loadProducts();
+  } catch (err) {
+    console.error('Failed to load products:', err);
+  }
+});
 
 // Form state
 const selectedProductId = ref<number | null>(null);
@@ -262,20 +268,17 @@ async function handleSubmit(): Promise<void> {
   isSubmitting.value = true;
   
   try {
-    // Add stock movement log
-    addMovement({
+    // Record stock transaction via API
+    await recordTransaction({
+      transactionNumber: refDocument.value || `TX-IN-${Date.now()}`,
+      transactionType: 'IN',
       productId: product.id,
-      productName: product.name,
-      partNumber: product.partNumber,
-      type: 'IN',
       quantity: qty.value,
-      refDocument: refDocument.value,
       note: note.value,
-      createdBy: authStore.currentUser?.name || 'พนักงานคลังสินค้า',
     });
 
     // Update stock level
-    updateProduct(product.id, {
+    await updateProduct(product.id, {
       stockQty: product.stockQty + qty.value,
     });
 

@@ -55,7 +55,7 @@
       </q-card-section>
     </q-card>
 
-    <BaseTable title="ประวัติรายการย้อนหลัง" :rows="filteredMovements" :columns="columns">
+    <BaseTable title="ประวัติรายการย้อนหลัง" :rows="filteredMovements" :columns="columns" :loading="isLoading">
       <template #body-cell-type="props">
         <q-td :props="props">
           <q-chip
@@ -88,12 +88,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import BasePageHeader from '@/components/base/BasePageHeader.vue';
 import BaseTable from '@/components/base/BaseTable.vue';
 import { useStock, type MovementType, type StockMovement } from '@/composables/use-stock';
 
-const { stockMovements } = useStock();
+const { stockMovements, isLoading, loadStockMovements } = useStock();
+
+onMounted(async () => {
+  try {
+    await loadStockMovements();
+  } catch (err) {
+    console.error('Failed to load stock movements:', err);
+  }
+});
 
 const filterType = ref<MovementType | null>(null);
 const filterDate = ref<string | null>(null);
