@@ -1,35 +1,40 @@
-# Production Dockerfile for NestJS Backend
+# --- Stage 1: Builder ---
 FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files
+# คัดลอกไฟล์ package ทั้งหมด
 COPY package*.json ./
 
-# Install dependencies (fallback to npm install if lockfile mismatch)
-RUN npm install
+# ติดตั้ง dependencies ทั้งหมดเพื่อใช้ในการ build
+RUN npm ci || npm install
 
-# Copy source code
+# คัดลอก source code ทั้งหมด
 COPY . .
 
-# Build application
+# สร้างไฟล์ Production Build (dist/)
 RUN npm run build
 
-# Production runtime stage
+
+# --- Stage 2: Production Runner ---
 FROM node:20-alpine AS runner
 
 WORKDIR /app
 
 ENV NODE_ENV=production
 
-# Copy dependencies and build artifacts from builder
-COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/node_modules ./node_modules
+# คัดลอกเฉพาะ package.json เพื่อติดตั้งเฉพาะ production dependencies
+COPY package*.json ./
+
+# ติดตั้งเฉพาะ production dependencies เพื่อลดขนาด image
+RUN npm ci --only=production || npm install --omit=dev
+
+# คัดลอกไฟล์ build artifacts จาก builder stage
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/src ./src
-COPY --from=builder /app/tsconfig*.json ./
+
+# หมายเหตุ: ไม่จำเป็นต้อง COPY src หรือ tsconfig ใน production runner สเตจนี้ครับ
 
 EXPOSE 3000
 
-# Start command: run migration, seed admin and start server
+# รันคำสั่งเรียงตามลำดับเมื่อ container เริ่มทำงาน
 CMD ["sh", "-c", "npm run migration:run && npm run seed:admin && npm run start:prod"]
