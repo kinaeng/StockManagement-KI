@@ -31,6 +31,8 @@
 $ pnpm install
 ```
 
+When running the backend in Docker while PostgreSQL runs on the host, set `DB_HOST=host.docker.internal`. Do not use `localhost` from inside the container.
+
 ## Compile and run the project
 
 ```bash

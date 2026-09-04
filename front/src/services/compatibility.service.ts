@@ -24,7 +24,7 @@ interface ApiResponse<T> {
   message?: string;
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_URL ?? '/api';
+const API_BASE_URL = import.meta.env.QCLI_API_URL ?? '/api';
 
 async function parseApiResponse<T>(response: Response): Promise<T> {
   const body = (await response.json()) as Partial<ApiResponse<T>> & T;

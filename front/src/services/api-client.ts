@@ -19,7 +19,7 @@ export interface ApiRequestOptions extends Omit<RequestInit, 'body'> {
   auth?: boolean;
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_URL ?? '/api';
+const API_BASE_URL = import.meta.env.QCLI_API_URL ?? '/api';
 const TOKEN_STORAGE_KEY = 'ki-stock.access-token';
 const USER_STORAGE_KEY = 'ki-stock.current-user';
 
